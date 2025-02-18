@@ -1,0 +1,20 @@
+[project]
+name = "test-homer"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "langchain-anthropic>=0.3.7",
+    "langchain-community>=0.3.17",
+    "langchain-ollama>=0.2.3",
+    "langgraph>=0.2.71",
+    "langgraph-checkpoint-postgres>=2.0.15",
+    "langsmith>=0.3.8",
+    "psycopg>=3.2.4",
+    "psycopg-pool>=3.2.4",
+    "python-dotenv>=1.0.1",
+    "tavily-python>=0.5.1",
+    "torch>=2.6.0",
+    "transformers>=4.49.0",
+]
