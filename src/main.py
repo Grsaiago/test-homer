@@ -25,9 +25,9 @@ def stream_graph_updates(
     """
     Runs the 'graph' with 'config' and it's initial state as 'initial_state'.
 
-    @param graph: the compiled final graph to run
-    @param initial_state: The initial state to be pushed to the graph
-    @return: None
+    :param graph: the compiled final graph to run
+    :param initial_state: The initial state to be pushed to the graph
+    :return: None
     """
     for event in graph.stream(initial_state, config):
         # os eventos vem com o nome do chatbot e o estado depois de passar por cada nó
@@ -43,8 +43,8 @@ def chatbot(state: State, model: BaseChatModel):
     The first processing step. This is the function that calls the ai to get
     a Natural Language response to be sent to the end user.
 
-    @param state: The graph's State
-    @param model: The model to be used to process the question
+    :param state: The graph's State
+    :param model: The model to be used to process the question
     """
     ## render the final template message as a history of all messages + a prompt
     rendered_message = prompt_template.invoke({"msgs": state["messages"]})
@@ -58,7 +58,7 @@ def sentiment_analysis(state: State) -> State:
     It fetches all messages sent from the user so far and classifies the user as:
     "hot", "warm", or "cold". Al of those in regards to buying intent
 
-    @param state: The graph's State
+    :param state: The graph's State
     """
     # messages = memory.get(context)
     messages = state["messages"]

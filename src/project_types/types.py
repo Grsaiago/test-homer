@@ -29,8 +29,8 @@ class TypedEnvs(PydanticBaseModel):
         It fetches all messages sent from the user so far and classifies the user as:
         "hot", "warm", or "cold". Al of those in regards to buying intent
 
-        @returns: A new TypedEnvs object.
-        @raise EnvSetupException: Some required env is not setup
+        :returns: A new TypedEnvs object.
+        :raise EnvSetupException: Some required env is not setup
 
         """
         load_dotenv()
