@@ -18,9 +18,10 @@ class State(MessagesState):
 
 
 class TypedEnvs(PydanticBaseModel):
-    db_host: str
     db_user: str
     db_passwd: str
+    db_name: str
+    db_host: str
 
     @staticmethod
     def load_envs() -> "TypedEnvs":
@@ -38,9 +39,10 @@ class TypedEnvs(PydanticBaseModel):
         # 1. Add the new variable to the class
         # 2. Add a new entry in this list as: (<variable name in the class>, <name of the env>)
         needed_env: list[tuple[str, str]] = [
-            ("db_host", "POSTGRES_DB"),
             ("db_user", "POSTGRES_USER"),
             ("db_passwd", "POSTGRES_PASSWORD"),
+            ("db_name", "POSTGRES_DB"),
+            ("db_host", "DB_HOST"),
         ]
         validated_envs_obj = {}
         validation_errors: list[str] = []

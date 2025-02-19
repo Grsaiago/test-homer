@@ -19,4 +19,4 @@ services:
       - pg-data:/var/lib/postgresql/data:rw
 
 volumes:
-  gp-data: {}
+  pg-data: {}

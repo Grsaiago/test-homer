@@ -1,17 +1,16 @@
 #!/usr/bin/env python
 
 import sys
-from dotenv import load_dotenv
+
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import HumanMessage
 from langchain_core.runnables import RunnableConfig
 from langchain_ollama import ChatOllama
-from langgraph.checkpoint.memory import MemorySaver
+from langgraph.checkpoint.postgres import PostgresSaver
 from langgraph.graph import StateGraph
 from langgraph.graph.state import CompiledStateGraph
-from langgraph.checkpoint.postgres import PostgresSaver
-from psycopg import Connection
 from psycopg_pool import ConnectionPool
+
 from project_types.types import EnvSetupException, State, TypedEnvs
 from prompt import prompt_template
 from sentiment_analyzer import sentiment_analyzer
@@ -80,9 +79,9 @@ def sentiment_analysis(state: State) -> State:
     return state
 
 
-project_envs: TypedEnvs
+envs: TypedEnvs
 try:
-    project_envs = TypedEnvs.load_envs()
+    envs = TypedEnvs.load_envs()
 except EnvSetupException as err:
     print("Failed due to lack of envs setup:")
     for error in err.errors:
@@ -91,56 +90,63 @@ except EnvSetupException as err:
 
 
 def main():
-    connection_kwargs = {
+    db_connection_kwargs = {
         "autocommit": True,
         "prepare_threshold": 0,
     }
+    db_connection_string = f"postgresql://{envs.db_user}:{envs.db_passwd}@{envs.db_host}:5432/{envs.db_name}"
+    with ConnectionPool(
+        conninfo=db_connection_string,
+        max_size=20,
+        kwargs=db_connection_kwargs,
+    ) as db_pool:
+        memory = PostgresSaver(db_pool)
+        memory.setup()
 
-    memory = MemorySaver()
-    chatbot_model = ChatOllama(model="splitpierre/bode-alpaca-pt-br:latest")
-    graph_builder = StateGraph(State)
-    graph = (
-        graph_builder.add_sequence(
-            [
-                (
-                    "chatbot",
-                    lambda state: chatbot(state, chatbot_model),
-                ),
-                ("sentiment_node", sentiment_analysis),
-            ]
+        chatbot_model = ChatOllama(model="splitpierre/bode-alpaca-pt-br:latest")
+        graph_builder = StateGraph(State)
+        graph = (
+            graph_builder.add_sequence(
+                [
+                    (
+                        "chatbot",
+                        lambda state: chatbot(state, chatbot_model),
+                    ),
+                    ("sentiment_node", sentiment_analysis),
+                ]
+            )
+            .set_entry_point("chatbot")
+            .set_finish_point("sentiment_node")
+            .compile(checkpointer=memory)
         )
-        .set_entry_point("chatbot")
-        .set_finish_point("sentiment_node")
-        .compile(checkpointer=memory)
-    )
 
-    while True:
-        user_id = input("Qual o seu nome?: ")
-        user_config: RunnableConfig = {"configurable": {"thread_id": user_id}}
         while True:
-            try:
-                # print("O valor de memória atual é: ", memory.get(user_config))
-                updated_memory = memory.get(user_config)
-                if updated_memory is not None:
-                    print(
-                        "o valor de state é",
-                        updated_memory["channel_values"]["messages"],
-                    )
-                user_input = input("User: ")
-                if user_input.lower() in ["quit", "q", "exit"]:
-                    print("Byeeee")
-                    return
-                if user_input.lower() in ["novo_nome"]:
-                    print("Troca de nome")
+            user_id = input("Qual o seu nome?: ")
+            user_config: RunnableConfig = {"configurable": {"thread_id": user_id}}
+            while True:
+                try:
+                    # print("O valor de memória atual é: ", memory.get(user_config))
+                    updated_memory = memory.get(user_config)
+                    if updated_memory is not None:
+                        print(
+                            "o valor de state é",
+                            updated_memory["channel_values"]["messages"],
+                        )
+                    user_input = input("User: ")
+                    if user_input.lower() in ["quit", "q", "exit"]:
+                        print("Byeeee")
+                        return
+                    if user_input.lower() in ["novo_nome"]:
+                        print("Troca de nome")
+                        break
+                    initial_state: State = {
+                        "messages": [HumanMessage(content=user_input)],
+                        "placeholder": "",
+                    }
+                    stream_graph_updates(graph, initial_state, user_config)
+                except Exception as e:
+                    print("System: Something went wrong " + e.__str__())
                     break
-                initial_state: State = {
-                    "messages": [HumanMessage(content=user_input)],
-                    "placeholder": "",
-                }
-                stream_graph_updates(graph, initial_state, user_config)
-            except Exception as e:
-                print("System: Something went wrong " + e.__str__())
-                break
 
 
 if __name__ == "__main__":
