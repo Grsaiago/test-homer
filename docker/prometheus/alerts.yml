@@ -1,0 +1,11 @@
+groups:
+  - name: application-alerts
+    rules:
+      - alert: DatabaseDown
+        expr: up{job="postgres-metrics"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "The database is down"
+          description: "The database scrape service couldn't be reaached."

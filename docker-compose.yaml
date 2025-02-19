@@ -18,5 +18,44 @@ services:
     volumes:
       - pg-data:/var/lib/postgresql/data:rw
 
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus:latest
+    restart: always
+    volumes:
+      - prometheus-data:/prometheus:rw
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./docker/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
+    env_file:
+      - .env
+    ports:
+      - "9090:9090"
+    # volumes:
+    #   - prometheus-data:/prometheus:rw
+
+  grafana:
+    container_name: grafana
+    image: grafana/grafana:latest
+    restart: always
+    volumes:
+      - grafana-data:/var/lib/grafana:rw
+      - ./docker/grafana/provisioning/:/etc/grafana/provisioning/:ro
+    env_file:
+      - .env
+    ports:
+      - "3000:3000"
+
+  postgres-prom:
+    container_name: postgres_prom
+    image: quay.io/prometheuscommunity/postgres-exporter
+    restart: always
+    environment:
+      # env interpolation: https://docs.docker.com/compose/how-tos/environment-variables/variable-interpolation/
+      - DATA_SOURCE_NAME=postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@database:5432/{POSTGRES_DB}?sslmode=disable
+    expose:
+      - 9187
+
 volumes:
   pg-data: {}
+  prometheus-data: {}
+  grafana-data: {}
