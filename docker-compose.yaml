@@ -51,7 +51,9 @@ services:
     restart: always
     environment:
       # env interpolation: https://docs.docker.com/compose/how-tos/environment-variables/variable-interpolation/
-      - DATA_SOURCE_NAME=postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@database:5432/{POSTGRES_DB}?sslmode=disable
+      - DATA_SOURCE_NAME=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB}?sslmode=disable
+    ports:
+      - "9187:9187"
     expose:
       - 9187
 
