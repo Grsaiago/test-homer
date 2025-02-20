@@ -2,23 +2,32 @@
 
 import sys
 
-from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_core.messages import HumanMessage
-from langchain_core.runnables import RunnableConfig
+from langchain_core.messages import AnyMessage, HumanMessage
+from langchain_core.runnables import Runnable, RunnableConfig
 from langchain_ollama import ChatOllama
 from langgraph.checkpoint.postgres import PostgresSaver
-from langgraph.graph import StateGraph
+from langgraph.graph import MessagesState, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 from psycopg_pool import ConnectionPool
-
-from project_types.types import EnvSetupException, State, TypedEnvs
+from tools import atualizar_quartos
+from langgraph.prebuilt import ToolNode
+from project_types.types import EnvSetupException, TypedEnvs
 from prompt import prompt_template
 from sentiment_analyzer import sentiment_analyzer
 
 
+# Conditional function to redirect to tools node or not
+def should_continue(state: MessagesState):
+    messages = state["messages"]
+    last_message = messages[-1]
+    if last_message.tool_calls:
+        return "tools"
+    return "sentiment_node"
+
+
 def stream_graph_updates(
     graph: CompiledStateGraph,
-    initial_state: State,
+    initial_state: MessagesState,
     config: RunnableConfig | None = None,
 ) -> None:
     """
@@ -30,16 +39,17 @@ def stream_graph_updates(
     """
     for event in graph.stream(initial_state, config):
         # os eventos vem com o nome do chatbot e o estado depois de passar por cada nó
-        if "chatbot" not in event:
+        if "agent" not in event:
             continue
         for value in event.values():
-            if "messages" in value:
+            # Pega a chave mensagens se ela existir e se a última mensagem não for um tool_call
+            if "messages" in value and "tool_calls" not in value["messages"][-1]:
                 print("Assistant: ", value["messages"][-1].content)
 
 
-def chatbot(state: State, model: BaseChatModel):
+def chatbot(state: MessagesState, model: Runnable):
     """
-    The first processing step. This is the function that calls the ai to get
+    The first processing step. This is the function that calls the llm to get
     a Natural Language response to be sent to the end user.
 
     :param state: The graph's State
@@ -51,7 +61,7 @@ def chatbot(state: State, model: BaseChatModel):
     return {"messages": [message]}
 
 
-def sentiment_analysis(state: State) -> State:
+def sentiment_analysis(state: MessagesState) -> MessagesState:
     """
     The step that processes the sentiment.
     It fetches all messages sent from the user so far and classifies the user as:
@@ -59,17 +69,20 @@ def sentiment_analysis(state: State) -> State:
 
     :param state: The graph's State
     """
-    # messages = memory.get(context)
-    messages = state["messages"]
+    messages: list[AnyMessage] = state["messages"]
     if messages is not None:
-        print("O valor de memória atual é: ", messages)
-    return state
-    result = sentiment_analyzer(state["messages"][-2].content)
+        human_messages: list[str] = [
+            message.content
+            for message in messages
+            if isinstance(message, HumanMessage) and isinstance(message.content, str)
+        ]
+        message_string = ";".join(human_messages)
+        messages_len = len(human_messages)
+    result = sentiment_analyzer.predict(message_string)
     if result is None:
         return state
-    sentiment = result["label"]
-    confidence = result["score"]
-
+    print("sentiment analysis: ", result)
+    return state
     if sentiment == "NEGATIVE":
         print("Usuário está frio")
     elif sentiment == "POSITIVE" and confidence > 0.8:
@@ -100,22 +113,27 @@ def main():
         max_size=20,
         kwargs=db_connection_kwargs,
     ) as db_pool:
+        # memory setup
         memory = PostgresSaver(db_pool)
         memory.setup()
 
-        chatbot_model = ChatOllama(model="splitpierre/bode-alpaca-pt-br:latest")
-        graph_builder = StateGraph(State)
+        # Model/Tooling initialization
+        chatbot_model = ChatOllama(model="llama3.2").bind_tools([atualizar_quartos])
+        tool_node = ToolNode(tools=[atualizar_quartos])
+
+        # Graph compile
+        graph_builder = StateGraph(MessagesState)
         graph = (
-            graph_builder.add_sequence(
-                [
-                    (
-                        "chatbot",
-                        lambda state: chatbot(state, chatbot_model),
-                    ),
-                    ("sentiment_node", sentiment_analysis),
-                ]
-            )
-            .set_entry_point("chatbot")
+            graph_builder.add_node("agent", lambda state: chatbot(state, chatbot_model))
+            .add_node("tools", tool_node)
+            .add_node("sentiment_node", sentiment_analysis)
+            .set_entry_point("agent")
+            .add_conditional_edges(
+                "agent",
+                should_continue,
+                {"tools": "tools", "sentiment_node": "sentiment_node"},
+            )  # decide between tool usage ot not
+            .add_edge("tools", "agent")  # after tools, go back to agent
             .set_finish_point("sentiment_node")
             .compile(checkpointer=memory)
         )
@@ -125,23 +143,16 @@ def main():
             user_config: RunnableConfig = {"configurable": {"thread_id": user_id}}
             while True:
                 try:
-                    # print("O valor de memória atual é: ", memory.get(user_config))
-                    updated_memory = memory.get(user_config)
-                    if updated_memory is not None:
-                        print(
-                            "o valor de state é",
-                            updated_memory["channel_values"]["messages"],
-                        )
                     user_input = input("User: ")
-                    if user_input.lower() in ["quit", "q", "exit"]:
-                        print("Byeeee")
-                        return
-                    if user_input.lower() in ["novo_nome"]:
-                        print("Troca de nome")
-                        break
-                    initial_state: State = {
+                    match user_input.lower():
+                        case "q" | "quit" | "exit":
+                            print("Byeeee")
+                            return
+                        case "novo_nome":
+                            print("Troca de nome")
+                            break
+                    initial_state: MessagesState = {
                         "messages": [HumanMessage(content=user_input)],
-                        "placeholder": "",
                     }
                     stream_graph_updates(graph, initial_state, user_config)
                 except Exception as e:

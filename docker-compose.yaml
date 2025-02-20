@@ -17,6 +17,7 @@ services:
       - "5432:5432"
     volumes:
       - pg-data:/var/lib/postgresql/data:rw
+      - ./docker/postgres/scripts/:/docker-entrypoint-initdb.d/:rx
 
   prometheus:
     container_name: prometheus

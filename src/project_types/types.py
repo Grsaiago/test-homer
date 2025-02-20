@@ -13,10 +13,6 @@ class EnvSetupException(Exception):
         return f"EnvSetupException: {len(self.errors)} errors - {self.errors}"
 
 
-class State(MessagesState):
-    placeholder: str
-
-
 class TypedEnvs(PydanticBaseModel):
     db_user: str
     db_passwd: str
