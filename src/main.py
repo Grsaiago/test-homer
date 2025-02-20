@@ -8,10 +8,11 @@ from langchain_ollama import ChatOllama
 from langgraph.checkpoint.postgres import PostgresSaver
 from langgraph.graph import MessagesState, StateGraph
 from langgraph.graph.state import CompiledStateGraph
-from psycopg_pool import ConnectionPool
-from tools import atualizar_quartos
 from langgraph.prebuilt import ToolNode
-from project_types.types import EnvSetupException, TypedEnvs
+from psycopg_pool import ConnectionPool
+
+import internal_tools
+from project_types.env_types import EnvSetupException, TypedEnvs
 from prompt import prompt_template
 from sentiment_analyzer import sentiment_analyzer
 
@@ -55,7 +56,7 @@ def chatbot(state: MessagesState, model: Runnable):
     :param state: The graph's State
     :param model: The model to be used to process the question
     """
-    ## render the final template message as a history of all messages + a prompt
+    ## render the final template message as prompt + history of all messages
     rendered_message = prompt_template.invoke({"msgs": state["messages"]})
     message = model.invoke(rendered_message)
     return {"messages": [message]}
@@ -117,9 +118,12 @@ def main():
         memory = PostgresSaver(db_pool)
         memory.setup()
 
+        # setup tools (aqui começa a codebase bilingue xD)
+        update_state_tools = [internal_tools.atualizar_quartos]
+
         # Model/Tooling initialization
-        chatbot_model = ChatOllama(model="llama3.2").bind_tools([atualizar_quartos])
-        tool_node = ToolNode(tools=[atualizar_quartos])
+        chatbot_model = ChatOllama(model="llama3.2").bind_tools(update_state_tools)
+        tool_node = ToolNode(tools=update_state_tools)
 
         # Graph compile
         graph_builder = StateGraph(MessagesState)

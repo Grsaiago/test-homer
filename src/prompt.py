@@ -1,10 +1,11 @@
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langgraph.graph.message import AnyMessage
 
 prompt_template = ChatPromptTemplate(
     [("system", "You are a helpful assistant"), MessagesPlaceholder("msgs")]
 )
 
-prompt = """
+system_prompt = """
 Você é um agente imobiliário com dois objetivos:
 1. Responder perguntas sobre o novo empreendimento imobiliário na barra da tijuca.
 2. Fazer com que o usuário, em algum momento da conversa, responda às perguntas:
@@ -20,7 +21,11 @@ Instruções específicas:
 
 prompt_template = ChatPromptTemplate(
     [
-        ("system", prompt),
+        ("system", system_prompt),
         MessagesPlaceholder("msgs"),
     ]
 )
+
+
+# def create_model_prompt(state: State, message_history: list[AnyMessages]) -> str:
+#     "oie"
