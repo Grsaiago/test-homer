@@ -6,9 +6,15 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TYPE PosicaoDoSol AS ENUM ('Tarde', 'Manhã');
+-- conditionally create type as per (https://stackoverflow.com/questions/7624919/check-if-a-user-defined-type-already-exists-in-postgresql)
+DO $$ BEGIN
+    CREATE TYPE PosicaoDoSol AS ENUM ('Tarde', 'Manhã');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
-CREATE TABLE lead_info (
+
+CREATE TABLE IF NOT EXISTS lead_info (
 	id SERIAL PRIMARY KEY,  -- pk autoincrement
 	nome_do_usuario VARCHAR NULL,
 	quantidade_de_quartos INTEGER NULL,  -- número de quartos que a pessoa quer

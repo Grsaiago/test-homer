@@ -1,13 +1,13 @@
 version: "2"
 sql:
 - schema: "./docker/postgres/scripts/init.sql"
-  queries: "src/queries/query.sql"
+  queries: "sql/queries"
   engine: "postgresql"
   codegen:
   - plugin: "py"
-    out: "src/database_layer"
+    out: "src/db"
     options:
-      package: "data_layer"
+      package: "db"
       emit_sync_querier: true
       emit_async_querier: true
       query_parameter_limit: 5
