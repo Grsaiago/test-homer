@@ -18,6 +18,7 @@ class TypedEnvs(PydanticBaseModel):
     db_passwd: str
     db_name: str
     db_host: str
+    debug: bool
 
     @staticmethod
     def load_envs() -> "TypedEnvs":
@@ -42,7 +43,6 @@ class TypedEnvs(PydanticBaseModel):
         ]
         validated_envs_obj = {}
         validation_errors: list[str] = []
-
         for obj_key, env in needed_env:
             found_env = os.getenv(env)
             if found_env is None:
@@ -52,5 +52,11 @@ class TypedEnvs(PydanticBaseModel):
         if len(validation_errors) != 0:
             raise EnvSetupException(validation_errors)
 
+        # place load for optional envs here
+        validated_envs_obj["debug"] = os.getenv("DEBUG") is not None and os.getenv(
+            "DEBUG"
+        ) not in {"0", "False", "false", "f"}
+
         result_obj = TypedEnvs(**validated_envs_obj)
+
         return result_obj
