@@ -31,3 +31,10 @@ deployed in a HA environment.
 - [Getting Started](https://langchain-ai.github.io/langgraph/tutorials/introduction/)
 
 - [Passing runtime values to tools](https://langchain-ai.github.io/langgraph/how-tos/pass-run-time-values-to-tools/)
+
+### TODOS
+
+- [ ] The llm is still halucinating a bit when passing the args for
+  the method that gets an enum. I'll look into creating each tool via
+  the class Tool instead of using the function decorator. This way I can
+  pass more information about each function parameter.
