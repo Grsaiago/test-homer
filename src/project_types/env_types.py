@@ -1,4 +1,5 @@
 import os
+import sys
 
 from dotenv import load_dotenv
 from langchain_core.utils.pydantic import PydanticBaseModel
@@ -60,3 +61,13 @@ class TypedEnvs(PydanticBaseModel):
         result_obj = TypedEnvs(**validated_envs_obj)
 
         return result_obj
+
+
+envs: TypedEnvs
+try:
+    envs = TypedEnvs.load_envs()
+except EnvSetupException as err:
+    print("Failed due to lack of envs setup:")
+    for error in err.errors:
+        print(f"- {error}")
+    sys.exit(-1)
