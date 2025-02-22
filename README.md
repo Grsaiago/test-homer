@@ -29,3 +29,5 @@ deployed in a HA environment.
 ### LangGraph
 
 - [Getting Started](https://langchain-ai.github.io/langgraph/tutorials/introduction/)
+
+- [Passing runtime values to tools](https://langchain-ai.github.io/langgraph/how-tos/pass-run-time-values-to-tools/)
