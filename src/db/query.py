@@ -3,7 +3,7 @@
 #   sqlc v1.28.0
 # source: query.sql
 import dataclasses
-from typing import Any, Optional
+from typing import Optional
 
 import sqlalchemy
 import sqlalchemy.ext.asyncio
@@ -13,38 +13,38 @@ from db import models
 
 CREATE_NEW_LEAD = """-- name: create_new_lead \\:one
 INSERT INTO lead_info (
-	nome_do_usuario
-) VALUES ( :p1 ) RETURNING id, nome_do_usuario, quantidade_de_quartos, posicao_do_sol, criado_em, atualizado_em
+	nome_do_lead
+) VALUES ( :p1 ) RETURNING id, nome_do_lead, quantidade_de_quartos, posicao_do_sol, criado_em, atualizado_em
 """
 
 
 GET_LEAD_BY_NAME = """-- name: get_lead_by_name \\:one
-SELECT	li.nome_do_usuario,
+SELECT	li.nome_do_lead,
 	li.quantidade_de_quartos,
 	li.posicao_do_sol
 FROM lead_info as li
-	WHERE li.nome_do_usuario = :p1
+	WHERE li.nome_do_lead = :p1
 """
 
 
 @dataclasses.dataclass()
 class GetLeadByNameRow:
-    nome_do_usuario: str
+    nome_do_lead: str
     quantidade_de_quartos: Optional[int]
-    posicao_do_sol: Optional[Any]
+    posicao_do_sol: Optional[models.Posicaodosol]
 
 
 UPDATE_ROOM_AMMOUNT = """-- name: update_room_ammount \\:exec
 UPDATE	lead_info
 	SET quantidade_de_quartos = :p2
-	WHERE nome_do_usuario = :p1
+	WHERE nome_do_lead = :p1
 """
 
 
 UPDATE_SUN_INCIDENCE = """-- name: update_sun_incidence \\:exec
 UPDATE	lead_info as li
 	SET posicao_do_sol = :p2
-	WHERE nome_do_usuario = :p1
+	WHERE nome_do_lead = :p1
 """
 
 
@@ -52,65 +52,99 @@ class Querier:
     def __init__(self, conn: sqlalchemy.engine.Connection):
         self._conn = conn
 
-    def create_new_lead(self, *, nome_do_usuario: str) -> Optional[models.LeadInfo]:
-        row = self._conn.execute(sqlalchemy.text(CREATE_NEW_LEAD), {"p1": nome_do_usuario}).first()
+    def create_new_lead(self, *, nome_do_lead: str) -> Optional[models.LeadInfo]:
+        row = self._conn.execute(
+            sqlalchemy.text(CREATE_NEW_LEAD), {"p1": nome_do_lead}
+        ).first()
         if row is None:
             return None
         return models.LeadInfo(
             id=row[0],
-            nome_do_usuario=row[1],
+            nome_do_lead=row[1],
             quantidade_de_quartos=row[2],
             posicao_do_sol=row[3],
             criado_em=row[4],
             atualizado_em=row[5],
         )
 
-    def get_lead_by_name(self, *, nome_do_usuario: str) -> Optional[GetLeadByNameRow]:
-        row = self._conn.execute(sqlalchemy.text(GET_LEAD_BY_NAME), {"p1": nome_do_usuario}).first()
+    def get_lead_by_name(self, *, nome_do_lead: str) -> Optional[GetLeadByNameRow]:
+        row = self._conn.execute(
+            sqlalchemy.text(GET_LEAD_BY_NAME), {"p1": nome_do_lead}
+        ).first()
         if row is None:
             return None
         return GetLeadByNameRow(
-            nome_do_usuario=row[0],
+            nome_do_lead=row[0],
             quantidade_de_quartos=row[1],
             posicao_do_sol=row[2],
         )
 
-    def update_room_ammount(self, *, nome_do_usuario: str, quantidade_de_quartos: Optional[int]) -> None:
-        self._conn.execute(sqlalchemy.text(UPDATE_ROOM_AMMOUNT), {"p1": nome_do_usuario, "p2": quantidade_de_quartos})
+    def update_room_ammount(
+        self, *, nome_do_lead: str, quantidade_de_quartos: Optional[int]
+    ) -> None:
+        self._conn.execute(
+            sqlalchemy.text(UPDATE_ROOM_AMMOUNT),
+            {"p1": nome_do_lead, "p2": quantidade_de_quartos},
+        )
 
-    def update_sun_incidence(self, *, nome_do_usuario: str, posicao_do_sol: Optional[Any]) -> None:
-        self._conn.execute(sqlalchemy.text(UPDATE_SUN_INCIDENCE), {"p1": nome_do_usuario, "p2": posicao_do_sol})
+    def update_sun_incidence(
+        self, *, nome_do_lead: str, posicao_do_sol: Optional[models.Posicaodosol]
+    ) -> None:
+        self._conn.execute(
+            sqlalchemy.text(UPDATE_SUN_INCIDENCE),
+            {"p1": nome_do_lead, "p2": posicao_do_sol},
+        )
 
 
 class AsyncQuerier:
     def __init__(self, conn: sqlalchemy.ext.asyncio.AsyncConnection):
         self._conn = conn
 
-    async def create_new_lead(self, *, nome_do_usuario: str) -> Optional[models.LeadInfo]:
-        row = (await self._conn.execute(sqlalchemy.text(CREATE_NEW_LEAD), {"p1": nome_do_usuario})).first()
+    async def create_new_lead(self, *, nome_do_lead: str) -> Optional[models.LeadInfo]:
+        row = (
+            await self._conn.execute(
+                sqlalchemy.text(CREATE_NEW_LEAD), {"p1": nome_do_lead}
+            )
+        ).first()
         if row is None:
             return None
         return models.LeadInfo(
             id=row[0],
-            nome_do_usuario=row[1],
+            nome_do_lead=row[1],
             quantidade_de_quartos=row[2],
             posicao_do_sol=row[3],
             criado_em=row[4],
             atualizado_em=row[5],
         )
 
-    async def get_lead_by_name(self, *, nome_do_usuario: str) -> Optional[GetLeadByNameRow]:
-        row = (await self._conn.execute(sqlalchemy.text(GET_LEAD_BY_NAME), {"p1": nome_do_usuario})).first()
+    async def get_lead_by_name(
+        self, *, nome_do_lead: str
+    ) -> Optional[GetLeadByNameRow]:
+        row = (
+            await self._conn.execute(
+                sqlalchemy.text(GET_LEAD_BY_NAME), {"p1": nome_do_lead}
+            )
+        ).first()
         if row is None:
             return None
         return GetLeadByNameRow(
-            nome_do_usuario=row[0],
+            nome_do_lead=row[0],
             quantidade_de_quartos=row[1],
             posicao_do_sol=row[2],
         )
 
-    async def update_room_ammount(self, *, nome_do_usuario: str, quantidade_de_quartos: Optional[int]) -> None:
-        await self._conn.execute(sqlalchemy.text(UPDATE_ROOM_AMMOUNT), {"p1": nome_do_usuario, "p2": quantidade_de_quartos})
+    async def update_room_ammount(
+        self, *, nome_do_lead: str, quantidade_de_quartos: Optional[int]
+    ) -> None:
+        await self._conn.execute(
+            sqlalchemy.text(UPDATE_ROOM_AMMOUNT),
+            {"p1": nome_do_lead, "p2": quantidade_de_quartos},
+        )
 
-    async def update_sun_incidence(self, *, nome_do_usuario: str, posicao_do_sol: Optional[Any]) -> None:
-        await self._conn.execute(sqlalchemy.text(UPDATE_SUN_INCIDENCE), {"p1": nome_do_usuario, "p2": posicao_do_sol})
+    async def update_sun_incidence(
+        self, *, nome_do_lead: str, posicao_do_sol: Optional[models.Posicaodosol]
+    ) -> None:
+        await self._conn.execute(
+            sqlalchemy.text(UPDATE_SUN_INCIDENCE),
+            {"p1": nome_do_lead, "p2": posicao_do_sol},
+        )

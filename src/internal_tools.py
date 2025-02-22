@@ -18,7 +18,7 @@ def atualizar_quartos(
     """Use essa ferramenta para atualizar quantos quartos o usuário vai querer no apto que o usuário está procurando"""
 
     print(f"A quantidade de quartos que o usuário quer é: {quantidade_de_quartos}")
-    database_layer.update_room_ammount(state["nome_do_usuario"], quantidade_de_quartos)
+    database_layer.update_room_ammount(state["nome_do_lead"], quantidade_de_quartos)
     return Command(
         update={
             "quantidade_de_quartos": quantidade_de_quartos,
@@ -41,7 +41,7 @@ def atualizar_posicao_do_sol(
     """Use essa ferramenta para modificar a posição do sol que o usuário vai querer no apartamento que o usuário está procurando: 'Manhã' ou 'Tarde'"""
 
     print(f"A posição do sol que o usuário quer é: {posicao_do_sol}")
-    database_layer.update_sun_incidence(state["nome_do_usuario"], posicao_do_sol)
+    database_layer.update_sun_incidence(state["nome_do_lead"], posicao_do_sol)
     return Command(
         update={
             "posicao_do_sol": posicao_do_sol,

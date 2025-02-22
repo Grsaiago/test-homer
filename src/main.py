@@ -173,7 +173,7 @@ def get_lead_initial_sate(lead_name: str, user_input: str) -> State:
         "messages": [HumanMessage(content=user_input)],
         "quantidade_de_quartos": synced_lead_info.quantidade_de_quartos,
         "posicao_do_sol": synced_lead_info.posicao_do_sol,
-        "nome_do_usuario": synced_lead_info.nome_do_usuario,
+        "nome_do_lead": synced_lead_info.nome_do_lead,
     }
     return state
 

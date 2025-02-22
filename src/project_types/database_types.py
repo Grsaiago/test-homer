@@ -63,22 +63,22 @@ class DatabaseLayer:
 
     ## Access to the database layer, this should be an interface reexporting sqlc generated functions, but well it's python xD
     def update_room_ammount(
-        self, nome_do_usuario: str, quantidade_de_quartos: int
+        self, nome_do_lead: str, quantidade_de_quartos: int
     ) -> None:
         with self.get_llm_db_engine().connect() as connection:
             Querier(connection).update_room_ammount(
-                nome_do_usuario=nome_do_usuario,
+                nome_do_lead=nome_do_lead,
                 quantidade_de_quartos=quantidade_de_quartos,
             )
             connection.commit()
         return None
 
     def update_sun_incidence(
-        self, nome_do_usuario: str, sun_position: PosicaoDoSol
+        self, nome_do_lead: str, sun_position: PosicaoDoSol
     ) -> None:
         with self.get_llm_db_engine().connect() as connection:
             Querier(connection).update_sun_incidence(
-                nome_do_usuario=nome_do_usuario,
+                nome_do_lead=nome_do_lead,
                 posicao_do_sol=sun_position,
             )
             connection.commit()
@@ -87,19 +87,17 @@ class DatabaseLayer:
     # crud for lead
     def get_lead_by_name(self, lead: str) -> GetLeadByNameRow | None:
         with self.get_llm_db_engine().connect() as connection:
-            found_lead = Querier(connection).get_lead_by_name(nome_do_usuario=lead)
+            found_lead = Querier(connection).get_lead_by_name(nome_do_lead=lead)
             connection.commit()
         return found_lead
 
     def create_lead_by_name(self, new_lead_name: str) -> GetLeadByNameRow:
         with self.get_llm_db_engine().connect() as connection:
-            new_lead = Querier(connection).create_new_lead(
-                nome_do_usuario=new_lead_name
-            )
+            new_lead = Querier(connection).create_new_lead(nome_do_lead=new_lead_name)
             assert new_lead is not None
             connection.commit()
         return GetLeadByNameRow(
-            nome_do_usuario=new_lead.nome_do_usuario,
+            nome_do_lead=new_lead.nome_do_lead,
             posicao_do_sol=new_lead.posicao_do_sol,
             quantidade_de_quartos=new_lead.quantidade_de_quartos,
         )
