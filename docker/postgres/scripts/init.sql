@@ -16,7 +16,7 @@ END $$;
 
 CREATE TABLE IF NOT EXISTS lead_info (
 	id SERIAL PRIMARY KEY,  -- pk autoincrement
-	nome_do_usuario VARCHAR NULL,
+	nome_do_usuario VARCHAR NOT NULL,
 	quantidade_de_quartos INTEGER NULL,  -- número de quartos que a pessoa quer
 	posicao_do_sol PosicaoDoSol NULL,
 	criado_em TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
