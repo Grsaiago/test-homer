@@ -35,11 +35,13 @@ def atualizar_quartos(
 @tool
 def atualizar_posicao_do_sol(
     tool_call_id: Annotated[str, InjectedToolCallId],
+    state: Annotated[State, InjectedState],
     posicao_do_sol: PosicaoDoSol,
 ) -> Command:
-    """Use essa ferramenta para modificar a posição do sol que o usuário vai querer no apartamento que o usuário está procurando: sol da tarde ou sol da manhã"""
+    """Use essa ferramenta para modificar a posição do sol que o usuário vai querer no apartamento que o usuário está procurando: 'Manhã' ou 'Tarde'"""
 
     print(f"A posição do sol que o usuário quer é: {posicao_do_sol}")
+    database_layer.update_sun_incidence(state["nome_do_usuario"], posicao_do_sol)
     return Command(
         update={
             "posicao_do_sol": posicao_do_sol,

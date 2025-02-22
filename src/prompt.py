@@ -34,8 +34,6 @@ def create_model_prompt(state: State, message_history: list[AnyMessage]) -> Prom
     :return PromptValue: A finished prompt, wich the system directive at the beginning and the message history right after.
     """
 
-    print("O VALOR DE STATE É: ", state)
-
     # TODO: Esse fraseamento tá meio meme
     pending_questions_header = "- Fazer com que o usuário, em algum momento da conversa, forneça as informações a seguir pra que você salve elas usando suas ferramentas:\n"
     update_questions_header = "- Caso o usuário forneça um novo valor para alguma dessas informações, atualizar o valor delas usando suas ferramentas.\n"

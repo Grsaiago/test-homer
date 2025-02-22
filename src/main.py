@@ -8,7 +8,6 @@ from langgraph.checkpoint.postgres import PostgresSaver
 from langgraph.graph import MessagesState, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 from langgraph.prebuilt import ToolNode
-from psycopg_pool import ConnectionPool
 
 import internal_tools
 from project_types.database_types import (
@@ -108,7 +107,10 @@ def main():
     memory.setup()
 
     # setup tools (aqui começa a codebase bilingue xD)
-    update_state_tools = [internal_tools.atualizar_quartos]
+    update_state_tools = [
+        internal_tools.atualizar_quartos,
+        internal_tools.atualizar_posicao_do_sol,
+    ]
 
     # Model/Tooling initialization
     chatbot_model = ChatOllama(model="llama3.2").bind_tools(update_state_tools)
@@ -132,7 +134,7 @@ def main():
     )
 
     while True:
-        user_id = input("Qual o seu nome?: ")
+        lead_name = input("Qual o seu nome?: ")
         while True:
             try:
                 user_input = input("User: ")
@@ -145,37 +147,34 @@ def main():
                         break
 
                 # get the initial state for a given id and append the current user message as the last message
-                initial_state = get_state_by_id(user_id, memory)
-                initial_state["messages"] = [HumanMessage(content=user_input)]
-                print("INITIAL STATE É: ", initial_state)
-
-                user_config: RunnableConfig = {"configurable": {"thread_id": user_id}}
+                initial_state = get_lead_initial_sate(lead_name, user_input)
+                # generate a runnableConfig based on lead's name
+                user_config: RunnableConfig = {"configurable": {"thread_id": lead_name}}
                 stream_graph_updates(graph, initial_state, user_config)
             except Exception as e:
                 print("System: Something went wrong " + e.__str__())
                 break
 
 
-def get_state_by_id(id: str, memory_layer: PostgresSaver) -> State:
+def get_lead_initial_sate(lead_name: str, user_input: str) -> State:
     """
-    Gets the state without the initial messages filled out.
+    Gets the state with the initial message filled out.
+    We initialize the state with what's in the lead_info table because we want
+    that any changes made to the db by third party (e.g: real estate agents),
+    to be reflected as soon as possible to the llm.
+    This increases fan-out, but makes it so that the llm's info is always up to date.
 
     :param id: The id of the thread.
     :param memory_layer: The memory layer for the graph.
     :return State: The state for this id **without the messages part filled out**
     """
-    config: RunnableConfig = {"configurable": {"thread_id": id}}
-
-    state: State
-    checkpoint = memory_layer.get(config)
-    if checkpoint is None:
-        state = {
-            "messages": None,
-            "posicao_do_sol": None,
-            "quantidade_de_quartos": None,
-        }
-    else:
-        state = State(**checkpoint["channel_values"])
+    synced_lead_info = database_layer.get_or_insert_lead_by_name(lead_name)
+    state: State = {
+        "messages": [HumanMessage(content=user_input)],
+        "quantidade_de_quartos": synced_lead_info.quantidade_de_quartos,
+        "posicao_do_sol": synced_lead_info.posicao_do_sol,
+        "nome_do_usuario": synced_lead_info.nome_do_usuario,
+    }
     return state
 
 

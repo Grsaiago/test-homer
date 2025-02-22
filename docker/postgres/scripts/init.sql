@@ -7,11 +7,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- conditionally create type as per (https://stackoverflow.com/questions/7624919/check-if-a-user-defined-type-already-exists-in-postgresql)
-DO $$ BEGIN
-    CREATE TYPE PosicaoDoSol AS ENUM ('Tarde', 'Manhã');
-EXCEPTION
-    WHEN duplicate_object THEN null;
-END $$;
+CREATE TYPE PosicaoDoSol AS ENUM ('Tarde', 'Manhã');
 
 
 CREATE TABLE IF NOT EXISTS lead_info (
