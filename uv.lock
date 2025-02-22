@@ -1867,6 +1867,7 @@ name = "test-homer"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "jinja2" },
     { name = "langchain-anthropic" },
     { name = "langchain-community" },
     { name = "langchain-ollama" },
@@ -1885,6 +1886,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+    { name = "jinja2", specifier = ">=3.1.5" },
     { name = "langchain-anthropic", specifier = ">=0.3.7" },
     { name = "langchain-community", specifier = ">=0.3.17" },
     { name = "langchain-ollama", specifier = ">=0.2.3" },
