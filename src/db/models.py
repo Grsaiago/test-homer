@@ -3,23 +3,21 @@
 #   sqlc v1.28.0
 import dataclasses
 import datetime
-import enum
 from typing import Optional
-
-
-class Posicaodosol(str, enum.Enum):
-    TARDE = "Tarde"
-    MANH = "Manhã"
 
 
 @dataclasses.dataclass()
 class LeadInfo:
-    """Guarda as preferências do usuário para um empreendimento específico"""
+    """Guarda as preferências do usuário para um empreendimento específico."""
     id: int
     nome_do_lead: Optional[str]
-    # A quantidade de quartos que a pessoa quer num apto.
+    # Quantos quartos a pessoa quer na casa.
     quantidade_de_quartos: Optional[int]
-    # Um enum que diz se a pessoa quer sol da manhã ou da tarde
-    posicao_do_sol: Optional[Posicaodosol]
+    # Se a pessoa quer suítes ou não.
+    com_suite: Optional[bool]
+    # A forma que a pessoa prefere ser contactada.
+    meio_de_contato: Optional[str]
+    # O valor que a pessoa tem para a compra
+    orcamento: Optional[int]
     criado_em: Optional[datetime.datetime]
     atualizado_em: Optional[datetime.datetime]

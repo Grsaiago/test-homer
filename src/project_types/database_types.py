@@ -7,7 +7,6 @@ from sqlalchemy import URL
 
 from db.models import LeadInfo
 from db.query import Querier
-from project_types.state_types import PosicaoDoSol
 from .env_types import envs
 from sqlalchemy.engine import Engine
 
@@ -63,76 +62,17 @@ class DatabaseLayer:
         return self.lang_graph_pool
 
     ## Access to the database layer, this should be an interface reexporting sqlc generated functions, but well it's python xD
-    def update_room_ammount(
-        self, nome_do_lead: str, quantidade_de_quartos: int
-    ) -> None:
+    def create_lead(self) -> LeadInfo | None:
         with self.get_llm_db_engine().connect() as connection:
-            Querier(connection).update_room_ammount(
-                nome_do_lead=nome_do_lead,
-                quantidade_de_quartos=quantidade_de_quartos,
-            )
+            new_lead = Querier(connection).create_lead()
             connection.commit()
-        return None
-
-    def update_sun_incidence(
-        self, nome_do_lead: str, sun_position: PosicaoDoSol
-    ) -> None:
-        with self.get_llm_db_engine().connect() as connection:
-            Querier(connection).update_sun_incidence(
-                nome_do_lead=nome_do_lead,
-                posicao_do_sol=sun_position,
-            )
-            connection.commit()
-        return None
-
-    def update_lead_name(self, id: int, nome_do_lead: str) -> None:
-        with self.get_llm_db_engine().connect() as connection:
-            Querier(connection).update_lead_name(
-                id=id,
-                nome_do_lead=nome_do_lead,
-            )
-            connection.commit()
-        return None
-
-    # crud for lead
-    # def get_lead_by_name(self, lead: str) -> LeadInfo | None:
-    #     with self.get_llm_db_engine().connect() as connection:
-    #         found_lead = Querier(connection).get_lead_by_name(nome_do_lead=lead)
-    #         connection.commit()
-    #     return found_lead
-    #
-    # def create_lead_with_name(self, new_lead_name: str) -> LeadInfo | None:
-    #     with self.get_llm_db_engine().connect() as connection:
-    #         new_lead = Querier(connection).create_lead_with_name(
-    #             nome_do_lead=new_lead_name
-    #         )
-    #         assert new_lead is not None
-    #         connection.commit()
-    #     return new_lead
-    #
-    # def get_or_create_lead_by_name(
-    #     self, lead_name: str
-    # ) -> Tuple[LeadInfo | None, bool]:
-    #     """
-    #     Given a name, it returns either a newly created lead or an existing one
-    #     """
-    #     lead = self.get_lead_by_name(lead_name)
-    #     if lead is not None:
-    #         return lead, False
-    #     lead = self.create_lead_with_name(lead_name)
-    #     return lead, True
+        return new_lead
 
     def get_lead_by_id(self, id: int) -> LeadInfo | None:
         with self.get_llm_db_engine().connect() as connection:
             found_lead = Querier(connection).get_lead_by_id(id=id)
             connection.commit()
         return found_lead
-
-    def create_lead(self) -> LeadInfo | None:
-        with self.get_llm_db_engine().connect() as connection:
-            new_lead = Querier(connection).create_lead()
-            connection.commit()
-        return new_lead
 
     def get_or_create_lead_by_id(self, lead_id: int) -> Tuple[LeadInfo | None, bool]:
         """
@@ -147,6 +87,51 @@ class DatabaseLayer:
 
         lead = self.create_lead()
         return lead, True
+
+    def update_lead_name(self, id: int, lead_name: str) -> None:
+        with self.get_llm_db_engine().connect() as connection:
+            Querier(connection).update_lead_name(
+                id=id,
+                nome_do_lead=lead_name,
+            )
+            connection.commit()
+        return None
+
+    def update_room_ammount(self, id: int, room_ammout: int) -> None:
+        with self.get_llm_db_engine().connect() as connection:
+            Querier(connection).update_room_ammount(
+                id=id,
+                quantidade_de_quartos=room_ammout,
+            )
+            connection.commit()
+        return None
+
+    def update_with_suite(self, id: int, with_suite: bool) -> None:
+        with self.get_llm_db_engine().connect() as connection:
+            Querier(connection).update_with_suite(
+                id=id,
+                com_suite=with_suite,
+            )
+            connection.commit()
+        return None
+
+    def update_means_of_contact(self, id: int, means_of_contact: str) -> None:
+        with self.get_llm_db_engine().connect() as connection:
+            Querier(connection).update_means_of_contact(
+                id=id,
+                meio_de_contato=means_of_contact,
+            )
+            connection.commit()
+        return None
+
+    def update_budget(self, id: int, budget: int) -> None:
+        with self.get_llm_db_engine().connect() as connection:
+            Querier(connection).update_budget(
+                id=id,
+                orcamento=budget,
+            )
+            connection.commit()
+        return None
 
 
 database_layer = DatabaseLayer(envs.db_user, envs.db_passwd, envs.db_host, envs.db_name)

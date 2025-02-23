@@ -43,5 +43,11 @@ deployed in a HA environment.
   because of the order and How I'm building the prompt.\
   Solved: I've taken ou the lead_name formatting for the info, moved to a directive
   at the end.
-- [ ] I have to finish the prompt, as well as the info that I'll record on the db.
-- [ ] I have to finish the sentiment analysis tool.
+- [ ] Update Table, State, Tools and Prompt to reflect the
+info that I'll get from the user.
+  - [ ] Table.
+  - [ ] State and Tools.
+  - [ ] Prompt.
+- [ ] Update Tools to be classes instead of functions, so I can give more
+context on the arguments.
+- [ ] I have to finish the sentiment analysis tool, specially the quotient.

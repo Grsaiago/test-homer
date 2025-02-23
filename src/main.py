@@ -18,13 +18,11 @@ from nodes import (
     chatbot,
     should_continue,
 )
-from project_types.database_types import (
-    database_layer,
-)  # Has the sqlAlchemy connection as well as a pgPool
-from project_types.env_types import (
-    envs,
-)  # this import validates if all envs exist and places them in a typed env object
-from project_types.state_types import PosicaoDoSol, State
+from project_types import (
+    database_layer,  # has the sqlAlchemy connection as well as a pgPool
+    envs,  # this import validates if all envs exist and places them in a typed env object,
+    State,
+)
 
 
 def stream_graph_updates(
@@ -61,8 +59,10 @@ def main():
     # setup tools (aqui começa a codebase bilingue xD)
     update_state_tools = [
         internal_tools.atualizar_quartos,
-        internal_tools.atualizar_posicao_do_sol,
+        internal_tools.atualizar_orcamento,
         internal_tools.atualizar_nome_do_lead,
+        internal_tools.atualizar_com_suite,
+        internal_tools.atualizar_meio_de_contato,
     ]
 
     # Model/Tooling initialization
@@ -119,7 +119,9 @@ def main():
                 initial_state: State = {
                     "nome_do_lead": lead_info.nome_do_lead,
                     "quantidade_de_quartos": lead_info.quantidade_de_quartos,
-                    "posicao_do_sol": lead_info.posicao_do_sol,  # these are the same types, lsp...
+                    "com_suite": lead_info.com_suite,
+                    "orcamento": lead_info.orcamento,
+                    "meio_de_contato": lead_info.meio_de_contato,
                     "messages": [HumanMessage(content=user_input)],
                 }
                 # generate a runnableConfig based on lead's name

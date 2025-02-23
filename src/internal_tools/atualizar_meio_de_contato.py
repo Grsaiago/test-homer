@@ -8,23 +8,25 @@ from project_types.database_types import database_layer
 
 
 @tool
-def atualizar_quartos(
+def atualizar_meio_de_contato(
     tool_call_id: Annotated[str, InjectedToolCallId],
     config: RunnableConfig,
-    quantidade_de_quartos: int,
+    meio_de_contato: str,
 ) -> Command:
-    """Use essa ferramenta para atualizar quantos quartos o usuário vai querer no apto que o usuário está procurando"""
+    """Use essa ferramenta para atualizar o valor da forma de entrar em contato com a pessoa."""
 
-    print(f"A quantidade de quartos que o usuário quer é: {quantidade_de_quartos}")
+    print(f"A forma de entrar em contato com o usuário é através de: {meio_de_contato}")
     thread_id = config["configurable"]["thread_id"]
     assert thread_id is not None
-    database_layer.update_room_ammount(int(thread_id), quantidade_de_quartos)
+    database_layer.update_means_of_contact(
+        int(thread_id), means_of_contact=meio_de_contato
+    )
     return Command(
         update={
-            "quantidade_de_quartos": quantidade_de_quartos,
+            "meio_de_contato": meio_de_contato,
             "messages": [
                 ToolMessage(
-                    "A quantidade de quartos para este usuário foi alterada com sucesso",
+                    "A forma de entrar em contato com este usuário foi alterada com sucesso",
                     tool_call_id=tool_call_id,
                 )
             ],

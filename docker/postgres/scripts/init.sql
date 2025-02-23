@@ -6,21 +6,21 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- conditionally create type as per (https://stackoverflow.com/questions/7624919/check-if-a-user-defined-type-already-exists-in-postgresql)
-CREATE TYPE PosicaoDoSol AS ENUM ('Tarde', 'Manhã');
-
-
 CREATE TABLE IF NOT EXISTS lead_info (
-	id SERIAL PRIMARY KEY,  -- pk autoincrement
-	nome_do_lead VARCHAR NULL,
-	quantidade_de_quartos INTEGER NULL,  -- número de quartos que a pessoa quer
-	posicao_do_sol PosicaoDoSol NULL,
-	criado_em TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-	atualizado_em TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    id SERIAL PRIMARY KEY,  -- pk autoincrement
+    nome_do_lead		VARCHAR NULL DEFAULT NULL,
+    quantidade_de_quartos   	INTEGER NULL DEFAULT NULL,  -- número de quartos que a pessoa quer
+    com_suite		    	BOOLEAN NULL DEFAULT NULL,
+    meio_de_contato		VARCHAR NULL DEFAULT NULL,
+    orcamento			INTEGER NULL DEFAULT NULL,
+    criado_em			TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    atualizado_em		TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
-COMMENT ON TABLE lead_info IS 'Guarda as preferências do usuário para um empreendimento específico';
-COMMENT ON COLUMN lead_info.quantidade_de_quartos IS 'A quantidade de quartos que a pessoa quer num apto.';
-COMMENT ON COLUMN lead_info.posicao_do_sol IS 'Um enum que diz se a pessoa quer sol da manhã ou da tarde';
+COMMENT ON TABLE lead_info IS 'Guarda as preferências do usuário para um empreendimento específico.';
+COMMENT ON COLUMN lead_info.quantidade_de_quartos IS 'Quantos quartos a pessoa quer na casa.';
+COMMENT ON COLUMN lead_info.com_suite IS 'Se a pessoa quer suítes ou não.';
+COMMENT ON COLUMN lead_info.meio_de_contato IS 'A forma que a pessoa prefere ser contactada.';
+COMMENT ON COLUMN lead_info.orcamento IS 'O valor que a pessoa tem para a compra';
 
 -- Trigger pra tabela de preferências
 CREATE TRIGGER update_timestamp_on_row_lead_info

@@ -12,54 +12,69 @@ from db import models
 
 CREATE_LEAD = """-- name: create_lead \\:one
 
+
 INSERT INTO lead_info (
-	nome_do_lead, quantidade_de_quartos, posicao_do_sol
-) VALUES ( NULL, NULL, NULL ) RETURNING id, nome_do_lead, quantidade_de_quartos, posicao_do_sol, criado_em, atualizado_em
+	nome_do_lead
+) VALUES ( NULL ) RETURNING id, nome_do_lead, quantidade_de_quartos, com_suite, meio_de_contato, orcamento, criado_em, atualizado_em
 """
 
 
 CREATE_LEAD_WITH_NAME = """-- name: create_lead_with_name \\:one
 INSERT INTO lead_info (
 	nome_do_lead
-) VALUES ( :p1 ) RETURNING id, nome_do_lead, quantidade_de_quartos, posicao_do_sol, criado_em, atualizado_em
+) VALUES ( :p1 ) RETURNING id, nome_do_lead, quantidade_de_quartos, com_suite, meio_de_contato, orcamento, criado_em, atualizado_em
 """
 
 
 GET_LEAD_BY_ID = """-- name: get_lead_by_id \\:one
 
-SELECT	id, nome_do_lead, quantidade_de_quartos, posicao_do_sol, criado_em, atualizado_em
+SELECT	id, nome_do_lead, quantidade_de_quartos, com_suite, meio_de_contato, orcamento, criado_em, atualizado_em
 FROM lead_info as li
 	WHERE li.id = :p1
 """
 
 
 GET_LEAD_BY_NAME = """-- name: get_lead_by_name \\:one
-SELECT	id, nome_do_lead, quantidade_de_quartos, posicao_do_sol, criado_em, atualizado_em
+SELECT	id, nome_do_lead, quantidade_de_quartos, com_suite, meio_de_contato, orcamento, criado_em, atualizado_em
 FROM lead_info as li
 	WHERE li.nome_do_lead = :p1
 """
 
 
+UPDATE_BUDGET = """-- name: update_budget \\:exec
+UPDATE	lead_info
+	SET orcamento = :p2
+	WHERE id = :p1
+"""
+
+
 UPDATE_LEAD_NAME = """-- name: update_lead_name \\:one
+
 UPDATE	lead_info
 	SET nome_do_lead = :p2
 	WHERE id = :p1
-	RETURNING id, nome_do_lead, quantidade_de_quartos, posicao_do_sol, criado_em, atualizado_em
+RETURNING id, nome_do_lead, quantidade_de_quartos, com_suite, meio_de_contato, orcamento, criado_em, atualizado_em
+"""
+
+
+UPDATE_MEANS_OF_CONTACT = """-- name: update_means_of_contact \\:exec
+UPDATE	lead_info
+	SET meio_de_contato = :p2
+	WHERE id = :p1
 """
 
 
 UPDATE_ROOM_AMMOUNT = """-- name: update_room_ammount \\:exec
-
 UPDATE	lead_info
 	SET quantidade_de_quartos = :p2
-	WHERE nome_do_lead = :p1
+	WHERE id = :p1
 """
 
 
-UPDATE_SUN_INCIDENCE = """-- name: update_sun_incidence \\:exec
+UPDATE_WITH_SUITE = """-- name: update_with_suite \\:exec
 UPDATE	lead_info
-	SET posicao_do_sol = :p2
-	WHERE nome_do_lead = :p1
+	SET com_suite = :p2
+	WHERE id = :p1
 """
 
 
@@ -75,9 +90,11 @@ class Querier:
             id=row[0],
             nome_do_lead=row[1],
             quantidade_de_quartos=row[2],
-            posicao_do_sol=row[3],
-            criado_em=row[4],
-            atualizado_em=row[5],
+            com_suite=row[3],
+            meio_de_contato=row[4],
+            orcamento=row[5],
+            criado_em=row[6],
+            atualizado_em=row[7],
         )
 
     def create_lead_with_name(self, *, nome_do_lead: Optional[str]) -> Optional[models.LeadInfo]:
@@ -88,9 +105,11 @@ class Querier:
             id=row[0],
             nome_do_lead=row[1],
             quantidade_de_quartos=row[2],
-            posicao_do_sol=row[3],
-            criado_em=row[4],
-            atualizado_em=row[5],
+            com_suite=row[3],
+            meio_de_contato=row[4],
+            orcamento=row[5],
+            criado_em=row[6],
+            atualizado_em=row[7],
         )
 
     def get_lead_by_id(self, *, id: int) -> Optional[models.LeadInfo]:
@@ -101,9 +120,11 @@ class Querier:
             id=row[0],
             nome_do_lead=row[1],
             quantidade_de_quartos=row[2],
-            posicao_do_sol=row[3],
-            criado_em=row[4],
-            atualizado_em=row[5],
+            com_suite=row[3],
+            meio_de_contato=row[4],
+            orcamento=row[5],
+            criado_em=row[6],
+            atualizado_em=row[7],
         )
 
     def get_lead_by_name(self, *, nome_do_lead: Optional[str]) -> Optional[models.LeadInfo]:
@@ -114,10 +135,15 @@ class Querier:
             id=row[0],
             nome_do_lead=row[1],
             quantidade_de_quartos=row[2],
-            posicao_do_sol=row[3],
-            criado_em=row[4],
-            atualizado_em=row[5],
+            com_suite=row[3],
+            meio_de_contato=row[4],
+            orcamento=row[5],
+            criado_em=row[6],
+            atualizado_em=row[7],
         )
+
+    def update_budget(self, *, id: int, orcamento: Optional[int]) -> None:
+        self._conn.execute(sqlalchemy.text(UPDATE_BUDGET), {"p1": id, "p2": orcamento})
 
     def update_lead_name(self, *, id: int, nome_do_lead: Optional[str]) -> Optional[models.LeadInfo]:
         row = self._conn.execute(sqlalchemy.text(UPDATE_LEAD_NAME), {"p1": id, "p2": nome_do_lead}).first()
@@ -127,16 +153,21 @@ class Querier:
             id=row[0],
             nome_do_lead=row[1],
             quantidade_de_quartos=row[2],
-            posicao_do_sol=row[3],
-            criado_em=row[4],
-            atualizado_em=row[5],
+            com_suite=row[3],
+            meio_de_contato=row[4],
+            orcamento=row[5],
+            criado_em=row[6],
+            atualizado_em=row[7],
         )
 
-    def update_room_ammount(self, *, nome_do_lead: Optional[str], quantidade_de_quartos: Optional[int]) -> None:
-        self._conn.execute(sqlalchemy.text(UPDATE_ROOM_AMMOUNT), {"p1": nome_do_lead, "p2": quantidade_de_quartos})
+    def update_means_of_contact(self, *, id: int, meio_de_contato: Optional[str]) -> None:
+        self._conn.execute(sqlalchemy.text(UPDATE_MEANS_OF_CONTACT), {"p1": id, "p2": meio_de_contato})
 
-    def update_sun_incidence(self, *, nome_do_lead: Optional[str], posicao_do_sol: Optional[models.Posicaodosol]) -> None:
-        self._conn.execute(sqlalchemy.text(UPDATE_SUN_INCIDENCE), {"p1": nome_do_lead, "p2": posicao_do_sol})
+    def update_room_ammount(self, *, id: int, quantidade_de_quartos: Optional[int]) -> None:
+        self._conn.execute(sqlalchemy.text(UPDATE_ROOM_AMMOUNT), {"p1": id, "p2": quantidade_de_quartos})
+
+    def update_with_suite(self, *, id: int, com_suite: Optional[bool]) -> None:
+        self._conn.execute(sqlalchemy.text(UPDATE_WITH_SUITE), {"p1": id, "p2": com_suite})
 
 
 class AsyncQuerier:
@@ -151,9 +182,11 @@ class AsyncQuerier:
             id=row[0],
             nome_do_lead=row[1],
             quantidade_de_quartos=row[2],
-            posicao_do_sol=row[3],
-            criado_em=row[4],
-            atualizado_em=row[5],
+            com_suite=row[3],
+            meio_de_contato=row[4],
+            orcamento=row[5],
+            criado_em=row[6],
+            atualizado_em=row[7],
         )
 
     async def create_lead_with_name(self, *, nome_do_lead: Optional[str]) -> Optional[models.LeadInfo]:
@@ -164,9 +197,11 @@ class AsyncQuerier:
             id=row[0],
             nome_do_lead=row[1],
             quantidade_de_quartos=row[2],
-            posicao_do_sol=row[3],
-            criado_em=row[4],
-            atualizado_em=row[5],
+            com_suite=row[3],
+            meio_de_contato=row[4],
+            orcamento=row[5],
+            criado_em=row[6],
+            atualizado_em=row[7],
         )
 
     async def get_lead_by_id(self, *, id: int) -> Optional[models.LeadInfo]:
@@ -177,9 +212,11 @@ class AsyncQuerier:
             id=row[0],
             nome_do_lead=row[1],
             quantidade_de_quartos=row[2],
-            posicao_do_sol=row[3],
-            criado_em=row[4],
-            atualizado_em=row[5],
+            com_suite=row[3],
+            meio_de_contato=row[4],
+            orcamento=row[5],
+            criado_em=row[6],
+            atualizado_em=row[7],
         )
 
     async def get_lead_by_name(self, *, nome_do_lead: Optional[str]) -> Optional[models.LeadInfo]:
@@ -190,10 +227,15 @@ class AsyncQuerier:
             id=row[0],
             nome_do_lead=row[1],
             quantidade_de_quartos=row[2],
-            posicao_do_sol=row[3],
-            criado_em=row[4],
-            atualizado_em=row[5],
+            com_suite=row[3],
+            meio_de_contato=row[4],
+            orcamento=row[5],
+            criado_em=row[6],
+            atualizado_em=row[7],
         )
+
+    async def update_budget(self, *, id: int, orcamento: Optional[int]) -> None:
+        await self._conn.execute(sqlalchemy.text(UPDATE_BUDGET), {"p1": id, "p2": orcamento})
 
     async def update_lead_name(self, *, id: int, nome_do_lead: Optional[str]) -> Optional[models.LeadInfo]:
         row = (await self._conn.execute(sqlalchemy.text(UPDATE_LEAD_NAME), {"p1": id, "p2": nome_do_lead})).first()
@@ -203,13 +245,18 @@ class AsyncQuerier:
             id=row[0],
             nome_do_lead=row[1],
             quantidade_de_quartos=row[2],
-            posicao_do_sol=row[3],
-            criado_em=row[4],
-            atualizado_em=row[5],
+            com_suite=row[3],
+            meio_de_contato=row[4],
+            orcamento=row[5],
+            criado_em=row[6],
+            atualizado_em=row[7],
         )
 
-    async def update_room_ammount(self, *, nome_do_lead: Optional[str], quantidade_de_quartos: Optional[int]) -> None:
-        await self._conn.execute(sqlalchemy.text(UPDATE_ROOM_AMMOUNT), {"p1": nome_do_lead, "p2": quantidade_de_quartos})
+    async def update_means_of_contact(self, *, id: int, meio_de_contato: Optional[str]) -> None:
+        await self._conn.execute(sqlalchemy.text(UPDATE_MEANS_OF_CONTACT), {"p1": id, "p2": meio_de_contato})
 
-    async def update_sun_incidence(self, *, nome_do_lead: Optional[str], posicao_do_sol: Optional[models.Posicaodosol]) -> None:
-        await self._conn.execute(sqlalchemy.text(UPDATE_SUN_INCIDENCE), {"p1": nome_do_lead, "p2": posicao_do_sol})
+    async def update_room_ammount(self, *, id: int, quantidade_de_quartos: Optional[int]) -> None:
+        await self._conn.execute(sqlalchemy.text(UPDATE_ROOM_AMMOUNT), {"p1": id, "p2": quantidade_de_quartos})
+
+    async def update_with_suite(self, *, id: int, com_suite: Optional[bool]) -> None:
+        await self._conn.execute(sqlalchemy.text(UPDATE_WITH_SUITE), {"p1": id, "p2": com_suite})

@@ -1,5 +1,8 @@
 from langchain_core.messages import AIMessage
-from nodes import SENTIMENT_NODE, TOOLS_NODE
+from .node_constants import (
+    SENTIMENT_NODE,
+    TOOLS_NODE,
+)  # It's imported from this place to avoid circular import
 from project_types.state_types import State
 
 
