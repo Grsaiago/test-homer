@@ -17,8 +17,11 @@ def atualizar_nome_do_lead(
     """Use essa ferramenta para modificar o nome do usuário, caso ele diga o nome dele ou caso ele peça para que o chame de outra forma"""
 
     print(f"O nome do usuário é: {novo_nome}")
-    assert config["configurable"]["thread_id"] is not None
-    database_layer.update_lead_name(config["configurable"]["thread_id"], novo_nome)
+    thread_id = config["configurable"]["thread_id"]
+    assert thread_id is not None
+    # thread_id is converted to str before graph passing
+    database_layer.update_lead_name(int(thread_id), novo_nome)
+    print(f"O id do usuário no banco é: {thread_id}")
     return Command(
         update={
             "nome_do_lead": novo_nome,

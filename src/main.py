@@ -1,15 +1,18 @@
 #!/usr/bin/env python
 
 from langchain.globals import set_debug
-from langchain_core.messages import AnyMessage, HumanMessage
-from langchain_core.runnables import Runnable, RunnableConfig
+from langchain_core.messages import HumanMessage
+from langchain_core.runnables import RunnableConfig
 from langchain_ollama import ChatOllama
 from langgraph.checkpoint.postgres import PostgresSaver
-from langgraph.graph import MessagesState, StateGraph
+from langgraph.graph import StateGraph
 from langgraph.graph.state import CompiledStateGraph
 from langgraph.prebuilt import ToolNode
 
 import internal_tools
+from nodes import AGENT_NODE, SENTIMENT_NODE, TOOLS_NODE, sentiment_analysis
+from nodes.agent import chatbot
+from nodes.conditional_node import should_continue
 from project_types.database_types import (
     database_layer,
 )  # Has the sqlAlchemy connection as well as a pgPool
@@ -17,17 +20,6 @@ from project_types.env_types import (
     envs,
 )  # this import validates if all envs exist and places them in a typed env object
 from project_types.state_types import State
-from prompt import create_model_prompt
-from sentiment_analyzer import sentiment_analyzer
-
-
-# Conditional function to redirect to tools node or not
-def should_continue(state: State):
-    messages = state["messages"]
-    last_message = messages[-1]
-    if last_message.tool_calls:
-        return "tools"
-    return "sentiment_node"
 
 
 def stream_graph_updates(
@@ -50,51 +42,6 @@ def stream_graph_updates(
             # Pega a chave mensagens se ela existir e se a última mensagem não for um tool_call
             if "messages" in value and "tool_calls" not in value["messages"][-1]:
                 print("Assistant: ", value["messages"][-1].content)
-
-
-def chatbot(state: State, model: Runnable):
-    """
-    The first processing step. This is the function that calls the llm to get
-    a Natural Language response to be sent to the end user.
-
-    :param state: The graph's State
-    :param model: The model to be used to process the question
-    """
-    ## render the final template message as prompt + history of all messages
-    prompt = create_model_prompt(state, state["messages"])
-    message = model.invoke(prompt)
-    return {"messages": [message]}
-
-
-def sentiment_analysis(state: State) -> MessagesState:
-    """
-    The step that processes the sentiment.
-    It fetches all messages sent from the user so far and classifies the user as:
-    "hot", "warm", or "cold". Al of those in regards to buying intent
-
-    :param state: The graph's State
-    """
-    messages: list[AnyMessage] = state["messages"]
-    if messages is not None:
-        human_messages: list[str] = [
-            message.content
-            for message in messages
-            if isinstance(message, HumanMessage) and isinstance(message.content, str)
-        ]
-        message_string = ";".join(human_messages)
-        messages_len = len(human_messages)
-    result = sentiment_analyzer.predict(message_string)
-    if result is None:
-        return state
-    print("sentiment analysis: ", result)
-    return state
-    if sentiment == "NEGATIVE":
-        print("Usuário está frio")
-    elif sentiment == "POSITIVE" and confidence > 0.8:
-        print("Usuário está quente")
-    else:
-        print("Usuário está morno")
-    return state
 
 
 def main():
@@ -120,17 +67,17 @@ def main():
     # Graph compile
     graph_builder = StateGraph(State)
     graph = (
-        graph_builder.add_node("agent", lambda state: chatbot(state, chatbot_model))
-        .add_node("tools", tool_node)
-        .add_node("sentiment_node", sentiment_analysis)
-        .set_entry_point("agent")
+        graph_builder.add_node(AGENT_NODE, lambda state: chatbot(state, chatbot_model))
+        .add_node(TOOLS_NODE, tool_node)
+        .add_node(SENTIMENT_NODE, sentiment_analysis)
+        .set_entry_point(AGENT_NODE)
         .add_conditional_edges(
             "agent",
             should_continue,
-            {"tools": "tools", "sentiment_node": "sentiment_node"},
-        )  # decide between tool usage ot not
-        .add_edge("tools", "agent")  # after tools, go back to agent
-        .set_finish_point("sentiment_node")
+            {TOOLS_NODE: TOOLS_NODE, SENTIMENT_NODE: SENTIMENT_NODE},
+        )  # decides between tool usage ot not
+        .add_edge(TOOLS_NODE, AGENT_NODE)  # after tools, go back to agent
+        .set_finish_point(SENTIMENT_NODE)
         .compile(checkpointer=memory)
     )
 
@@ -154,43 +101,27 @@ def main():
                     int(lead_id)
                 )
                 assert lead_info is not None
+                lead_id = lead_info.id  # atualizar o lead_id para o que exista
                 if is_new_lead:
                     print("Opa! Um novo lead xD")
+                # We initialize the state with what's in the lead_info table because we want
+                # that any changes made to the db by third party (e.g: real estate agents)
+                # to be reflected as soon as possible to the llm.
+                # This increases fan-out, but makes it so that the llm's info is always up to date.
                 initial_state: State = {
-                    "messages": [HumanMessage(content=user_input)],
+                    "nome_do_lead": lead_info.nome_do_lead,
                     "quantidade_de_quartos": lead_info.quantidade_de_quartos,
                     "posicao_do_sol": lead_info.posicao_do_sol,  # these are the same types, lsp...
-                    "nome_do_lead": lead_info.nome_do_lead,
+                    "messages": [HumanMessage(content=user_input)],
                 }
                 # generate a runnableConfig based on lead's name
-                user_config: RunnableConfig = {"configurable": {"thread_id": lead_id}}
+                user_config: RunnableConfig = {
+                    "configurable": {"thread_id": str(lead_id)}
+                }
                 stream_graph_updates(graph, initial_state, user_config)
             except Exception as e:
                 print("System: Something went wrong " + e.__str__())
                 break
-
-
-def get_lead_initial_sate(lead_name: str, user_input: str) -> State:
-    """
-    Gets the state with the initial message filled out.
-    We initialize the state with what's in the lead_info table because we want
-    that any changes made to the db by third party (e.g: real estate agents),
-    to be reflected as soon as possible to the llm.
-    This increases fan-out, but makes it so that the llm's info is always up to date.
-
-    :param id: The id of the thread.
-    :param memory_layer: The memory layer for the graph.
-    :return State: The state for this id **without the messages part filled out**
-    """
-    synced_lead_info = database_layer.get_or_create_lead_by_id(lead_name)
-    assert synced_lead_info is not None
-    state: State = {
-        "messages": [HumanMessage(content=user_input)],
-        "quantidade_de_quartos": synced_lead_info.quantidade_de_quartos,
-        "posicao_do_sol": synced_lead_info.posicao_do_sol,
-        "nome_do_lead": synced_lead_info.nome_do_lead,
-    }
-    return state
 
 
 if __name__ == "__main__":
