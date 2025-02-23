@@ -41,6 +41,9 @@ Informações que você tem que coletar sobre {{ nome_do_lead }}, que é a pesso
 {%- else -%}
 Informações que você tem que coletar sobre a pessoa com quem você está conversando:
 {%- endif -%}
+{%- if not nome_do_lead%}
+- qual o nome da pessoa com quem você está conversando?
+{%- endif %}
 {%- if not quantidade_de_quartos %}
 - {{ nome_do_lead | default('A pessoa', true) }} quer uma casa de quantos quartos?
 {%- endif %}
