@@ -10,16 +10,21 @@ from langgraph.graph.state import CompiledStateGraph
 from langgraph.prebuilt import ToolNode
 
 import internal_tools
-from nodes import AGENT_NODE, SENTIMENT_NODE, TOOLS_NODE, sentiment_analysis
-from nodes.agent import chatbot
-from nodes.conditional_node import should_continue
+from nodes import (
+    AGENT_NODE,
+    SENTIMENT_NODE,
+    TOOLS_NODE,
+    sentiment_analysis,
+    chatbot,
+    should_continue,
+)
 from project_types.database_types import (
     database_layer,
 )  # Has the sqlAlchemy connection as well as a pgPool
 from project_types.env_types import (
     envs,
 )  # this import validates if all envs exist and places them in a typed env object
-from project_types.state_types import State
+from project_types.state_types import PosicaoDoSol, State
 
 
 def stream_graph_updates(
@@ -74,7 +79,10 @@ def main():
         .add_conditional_edges(
             "agent",
             should_continue,
-            {TOOLS_NODE: TOOLS_NODE, SENTIMENT_NODE: SENTIMENT_NODE},
+            {
+                TOOLS_NODE: TOOLS_NODE,
+                SENTIMENT_NODE: SENTIMENT_NODE,
+            },
         )  # decides between tool usage ot not
         .add_edge(TOOLS_NODE, AGENT_NODE)  # after tools, go back to agent
         .set_finish_point(SENTIMENT_NODE)

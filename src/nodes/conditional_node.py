@@ -1,3 +1,4 @@
+from langchain_core.messages import AIMessage
 from nodes import SENTIMENT_NODE, TOOLS_NODE
 from project_types.state_types import State
 
@@ -6,6 +7,7 @@ from project_types.state_types import State
 def should_continue(state: State):
     messages = state["messages"]
     last_message = messages[-1]
+    assert isinstance(last_message, AIMessage)
     if last_message.tool_calls:
         return TOOLS_NODE
     return SENTIMENT_NODE
