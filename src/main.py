@@ -98,7 +98,7 @@ def sentiment_analysis(state: State) -> MessagesState:
 
 
 def main():
-    # set debugging for langGraph
+    # set debugging for langGraph (or not)
     set_debug(envs.debug)
     print(f"O valor de debug é : {envs.debug}")
 
@@ -110,6 +110,7 @@ def main():
     update_state_tools = [
         internal_tools.atualizar_quartos,
         internal_tools.atualizar_posicao_do_sol,
+        internal_tools.atualizar_nome_do_lead,
     ]
 
     # Model/Tooling initialization
@@ -133,8 +134,10 @@ def main():
         .compile(checkpointer=memory)
     )
 
+    # main event loop
     while True:
-        lead_name = input("Qual o seu nome?: ")
+        lead_id = input("Qual o Id dessa conversa?: ")
+        # TODO: Validate to see if it's a valid number representation and if n > 0
         while True:
             try:
                 user_input = input("User: ")
@@ -142,14 +145,25 @@ def main():
                     case "q" | "quit" | "exit":
                         print("Byeeee")
                         return
-                    case "novo_nome":
-                        print("Troca de nome")
+                    case "nova_conversa":
+                        print("Fechando nossa conversa, até outra hora!")
                         break
 
                 # get the initial state for a given id and append the current user message as the last message
-                initial_state = get_lead_initial_sate(lead_name, user_input)
+                lead_info, is_new_lead = database_layer.get_or_create_lead_by_id(
+                    int(lead_id)
+                )
+                assert lead_info is not None
+                if is_new_lead:
+                    print("Opa! Um novo lead xD")
+                initial_state: State = {
+                    "messages": [HumanMessage(content=user_input)],
+                    "quantidade_de_quartos": lead_info.quantidade_de_quartos,
+                    "posicao_do_sol": lead_info.posicao_do_sol,  # these are the same types, lsp...
+                    "nome_do_lead": lead_info.nome_do_lead,
+                }
                 # generate a runnableConfig based on lead's name
-                user_config: RunnableConfig = {"configurable": {"thread_id": lead_name}}
+                user_config: RunnableConfig = {"configurable": {"thread_id": lead_id}}
                 stream_graph_updates(graph, initial_state, user_config)
             except Exception as e:
                 print("System: Something went wrong " + e.__str__())
@@ -168,7 +182,8 @@ def get_lead_initial_sate(lead_name: str, user_input: str) -> State:
     :param memory_layer: The memory layer for the graph.
     :return State: The state for this id **without the messages part filled out**
     """
-    synced_lead_info = database_layer.get_or_insert_lead_by_name(lead_name)
+    synced_lead_info = database_layer.get_or_create_lead_by_id(lead_name)
+    assert synced_lead_info is not None
     state: State = {
         "messages": [HumanMessage(content=user_input)],
         "quantidade_de_quartos": synced_lead_info.quantidade_de_quartos,

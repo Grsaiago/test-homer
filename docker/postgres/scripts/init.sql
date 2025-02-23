@@ -12,7 +12,7 @@ CREATE TYPE PosicaoDoSol AS ENUM ('Tarde', 'Manhã');
 
 CREATE TABLE IF NOT EXISTS lead_info (
 	id SERIAL PRIMARY KEY,  -- pk autoincrement
-	nome_do_lead VARCHAR NOT NULL,
+	nome_do_lead VARCHAR NULL,
 	quantidade_de_quartos INTEGER NULL,  -- número de quartos que a pessoa quer
 	posicao_do_sol PosicaoDoSol NULL,
 	criado_em TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,

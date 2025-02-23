@@ -1,3 +1,4 @@
+from typing import Tuple
 from psycopg_pool.pool import ConnectionPool
 from sqlalchemy import (
     create_engine,
@@ -5,7 +6,7 @@ from sqlalchemy import (
 from sqlalchemy import URL
 
 from db.models import LeadInfo
-from db.query import GetLeadByNameRow, Querier
+from db.query import Querier
 from project_types.state_types import PosicaoDoSol
 from .env_types import envs
 from sqlalchemy.engine import Engine
@@ -84,29 +85,68 @@ class DatabaseLayer:
             connection.commit()
         return None
 
-    # crud for lead
-    def get_lead_by_name(self, lead: str) -> GetLeadByNameRow | None:
+    def update_lead_name(self, id: int, nome_do_lead: str) -> None:
         with self.get_llm_db_engine().connect() as connection:
-            found_lead = Querier(connection).get_lead_by_name(nome_do_lead=lead)
+            Querier(connection).update_lead_name(
+                id=id,
+                nome_do_lead=nome_do_lead,
+            )
+            connection.commit()
+        return None
+
+    # crud for lead
+    # def get_lead_by_name(self, lead: str) -> LeadInfo | None:
+    #     with self.get_llm_db_engine().connect() as connection:
+    #         found_lead = Querier(connection).get_lead_by_name(nome_do_lead=lead)
+    #         connection.commit()
+    #     return found_lead
+    #
+    # def create_lead_with_name(self, new_lead_name: str) -> LeadInfo | None:
+    #     with self.get_llm_db_engine().connect() as connection:
+    #         new_lead = Querier(connection).create_lead_with_name(
+    #             nome_do_lead=new_lead_name
+    #         )
+    #         assert new_lead is not None
+    #         connection.commit()
+    #     return new_lead
+    #
+    # def get_or_create_lead_by_name(
+    #     self, lead_name: str
+    # ) -> Tuple[LeadInfo | None, bool]:
+    #     """
+    #     Given a name, it returns either a newly created lead or an existing one
+    #     """
+    #     lead = self.get_lead_by_name(lead_name)
+    #     if lead is not None:
+    #         return lead, False
+    #     lead = self.create_lead_with_name(lead_name)
+    #     return lead, True
+
+    def get_lead_by_id(self, id: int) -> LeadInfo | None:
+        with self.get_llm_db_engine().connect() as connection:
+            found_lead = Querier(connection).get_lead_by_id(id=id)
             connection.commit()
         return found_lead
 
-    def create_lead_by_name(self, new_lead_name: str) -> GetLeadByNameRow:
+    def create_lead(self) -> LeadInfo | None:
         with self.get_llm_db_engine().connect() as connection:
-            new_lead = Querier(connection).create_new_lead(nome_do_lead=new_lead_name)
-            assert new_lead is not None
+            new_lead = Querier(connection).create_lead()
             connection.commit()
-        return GetLeadByNameRow(
-            nome_do_lead=new_lead.nome_do_lead,
-            posicao_do_sol=new_lead.posicao_do_sol,
-            quantidade_de_quartos=new_lead.quantidade_de_quartos,
-        )
+        return new_lead
 
-    def get_or_insert_lead_by_name(self, lead_name: str) -> GetLeadByNameRow:
-        lead = self.get_lead_by_name(lead_name)
-        if lead is None:
-            lead = self.create_lead_by_name(lead_name)
-        return lead
+    def get_or_create_lead_by_id(self, lead_id: int) -> Tuple[LeadInfo | None, bool]:
+        """
+        Given an Id, it returns either a newly created lead or an existing one.
+
+        :param lead_id: The Id to search for
+        :return Tuple[LeadInfo | None, bool]: A tuple with the found/created value and a bool to indicate if the value was newly created.
+        """
+        lead = self.get_lead_by_id(lead_id)
+        if lead is not None:
+            return lead, False
+
+        lead = self.create_lead()
+        return lead, True
 
 
 database_layer = DatabaseLayer(envs.db_user, envs.db_passwd, envs.db_host, envs.db_name)

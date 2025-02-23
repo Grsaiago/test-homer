@@ -16,7 +16,7 @@ class Posicaodosol(str, enum.Enum):
 class LeadInfo:
     """Guarda as preferências do usuário para um empreendimento específico"""
     id: int
-    nome_do_lead: str
+    nome_do_lead: Optional[str]
     # A quantidade de quartos que a pessoa quer num apto.
     quantidade_de_quartos: Optional[int]
     # Um enum que diz se a pessoa quer sol da manhã ou da tarde
