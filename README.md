@@ -38,9 +38,10 @@ deployed in a HA environment.
   the method that gets an enum. I'll look into creating each tool via
   the class Tool instead of using the function decorator. This way I can
   pass more information about each function parameter.
-  - [x] I'm feeding the user's name on the prompt, as a result, when the
+- [x] I'm feeding the user's name on the prompt, as a result, when the
   user wants to change it's name, the llm changes it to the name it had before,
   because of the order and How I'm building the prompt.\
   Solved: I've taken ou the lead_name formatting for the info, moved to a directive
   at the end.
-
+- [ ] I have to finish the prompt, as well as the info that I'll record on the db.
+- [ ] I have to finish the sentiment analysis tool.
