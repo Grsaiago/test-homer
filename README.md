@@ -144,13 +144,14 @@ Ainda de acordo com Fielding, a órdem de imposição de restrições na aplica�
 
 1. **Os requisitos do domínio:** Aqui não podemos mudar nada,
 o requisito tem que ser cumprido.
+
 2. **Disposição dos elementos arquiteturais:** Aqui temos duas opções:\
   2.1:  Podemos isolar a aplicação do Agente
         e colocá-la como um consumer de uma fila. (Não gosto dessa)\
-
   2.2:  Podemos colocar o Agente como um serviço e fazer ele comunicar com os outros
         serviços por grpc, o que já bate na imposição de banda
         - que é outra imposição principal. (Essa é hype :D).\
+
 3. **A implementação de cada elemento:** Aqui tem uma opção legal,
 investigar se cabe usar o [py03](https://pyo3.rs/main/getting-started.html?) para
 implementar partes do elemento arquitetural 'Agente' em Rust, ganhando performance,
