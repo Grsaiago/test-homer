@@ -236,7 +236,7 @@ ollama ls | grep qwen2.5
 
 Deve listar no terminal o modelo
 
-1. Configure um arquivo .env tal qual
+2. Configure um arquivo .env tal qual
 
 ```sh
   POSTGRES_DB = homer-db
@@ -246,13 +246,13 @@ Deve listar no terminal o modelo
   DEBUG = 0
 ```
 
-1. Suba os serviços
+3. Suba os serviços
 
 ```bash
 docker compose up -d
 ```
 
-1. Rode o Agente
+4. Rode o Agente
 
 ```bash
 ./src/main.py 
@@ -264,13 +264,13 @@ ou
 python3 ./src/main.py
 ```
 
-1. Informe um Id
+5. Informe um Id
 
 Aqui pode ser qualquer id. A aplicação vai vai checar por uma entrada na tabela
 que tenha o valor desse id como primary key. Caso não exista,
 ele vai criar uma entrada nova e printar o seu novo id de conversa.
 
-1. Prontinho
+6. Prontinho
 Agora é só conversar. Caso queira conectar no banco com um dbeaver
 da vida para ver as variáveis mudando em tempo real, fique à vontade.
 
