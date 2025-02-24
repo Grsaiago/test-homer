@@ -3,7 +3,14 @@
 #   sqlc v1.28.0
 import dataclasses
 import datetime
+import enum
 from typing import Optional
+
+
+class Temperaturadolead(str, enum.Enum):
+    QUENTE = "Quente"
+    FRIO = "Frio"
+    MORNO = "Morno"
 
 
 @dataclasses.dataclass()
@@ -17,5 +24,7 @@ class LeadInfo:
     bairro: Optional[str]
     # O valor que a pessoa tem para a compra.
     orcamento: Optional[int]
+    # O quão "quente" o lead está para uma venda
+    temperatura_do_lead: Temperaturadolead
     criado_em: Optional[datetime.datetime]
     atualizado_em: Optional[datetime.datetime]

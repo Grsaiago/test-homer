@@ -1,21 +1,21 @@
-from typing import Tuple
+from typing import Optional, Tuple
 from psycopg_pool.pool import ConnectionPool
 from sqlalchemy import (
     create_engine,
 )  # https://docs.sqlalchemy.org/en/20/core/engines.html#sqlalchemy.create_engine
 from sqlalchemy import URL
 
-from db.models import LeadInfo
+from db.models import LeadInfo, Temperaturadolead
 from db.query import Querier
 from .env_types import envs
 from sqlalchemy.engine import Engine
 
 
 class DatabaseLayer:
-    llm_db_engine: Engine | None = (
+    llm_db_engine: Optional[Engine] = (
         None  # this will connect to the db with write permissions only to the tables that the llm will write to
     )
-    lang_graph_pool: ConnectionPool | None = (
+    lang_graph_pool: Optional[ConnectionPool] = (
         None  # this will be used by langGraph's PostgresSaver class
     )
 
@@ -62,24 +62,24 @@ class DatabaseLayer:
         return self.lang_graph_pool
 
     ## Access to the database layer, this should be an interface reexporting sqlc generated functions, but well it's python xD
-    def create_lead(self) -> LeadInfo | None:
+    def create_lead(self) -> Optional[LeadInfo]:
         with self.get_llm_db_engine().connect() as connection:
             new_lead = Querier(connection).create_lead()
             connection.commit()
         return new_lead
 
-    def get_lead_by_id(self, id: int) -> LeadInfo | None:
+    def get_lead_by_id(self, id: int) -> Optional[LeadInfo]:
         with self.get_llm_db_engine().connect() as connection:
             found_lead = Querier(connection).get_lead_by_id(id=id)
             connection.commit()
         return found_lead
 
-    def get_or_create_lead_by_id(self, lead_id: int) -> Tuple[LeadInfo | None, bool]:
+    def get_or_create_lead_by_id(self, lead_id: int) -> Tuple[Optional[LeadInfo], bool]:
         """
         Given an Id, it returns either a newly created lead or an existing one.
 
         :param lead_id: The Id to search for
-        :return Tuple[LeadInfo | None, bool]: A tuple with the found/created value and a bool to indicate if the value was newly created.
+        :return Tuple[Optional[LeadInfo], bool]: A tuple with the found/created value and a bool to indicate if the value was newly created.
         """
         lead = self.get_lead_by_id(lead_id)
         if lead is not None:
@@ -120,6 +120,17 @@ class DatabaseLayer:
             Querier(connection).update_budget(
                 id=id,
                 orcamento=budget,
+            )
+            connection.commit()
+        return None
+
+    def update_lead_temperature(
+        self, id: int, new_temperature: Temperaturadolead
+    ) -> None:
+        with self.get_llm_db_engine().connect() as connection:
+            Querier(connection).update_lead_temperature(
+                id=id,
+                temperatura_do_lead=new_temperature,
             )
             connection.commit()
         return None

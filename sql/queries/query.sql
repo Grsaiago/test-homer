@@ -46,3 +46,8 @@ UPDATE	lead_info
 UPDATE	lead_info
 	SET orcamento = $2
 	WHERE id = $1;
+
+-- name: UpdateLeadTemperature :exec
+UPDATE	lead_info
+	SET temperatura_do_lead = $2
+	WHERE id = $1;

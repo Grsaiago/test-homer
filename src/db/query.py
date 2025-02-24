@@ -15,27 +15,27 @@ CREATE_LEAD = """-- name: create_lead \\:one
 
 INSERT INTO lead_info (
 	nome_do_lead
-) VALUES ( NULL ) RETURNING id, nome_do_lead, quantidade_de_quartos, bairro, orcamento, criado_em, atualizado_em
+) VALUES ( NULL ) RETURNING id, nome_do_lead, quantidade_de_quartos, bairro, orcamento, temperatura_do_lead, criado_em, atualizado_em
 """
 
 
 CREATE_LEAD_WITH_NAME = """-- name: create_lead_with_name \\:one
 INSERT INTO lead_info (
 	nome_do_lead
-) VALUES ( :p1 ) RETURNING id, nome_do_lead, quantidade_de_quartos, bairro, orcamento, criado_em, atualizado_em
+) VALUES ( :p1 ) RETURNING id, nome_do_lead, quantidade_de_quartos, bairro, orcamento, temperatura_do_lead, criado_em, atualizado_em
 """
 
 
 GET_LEAD_BY_ID = """-- name: get_lead_by_id \\:one
 
-SELECT	id, nome_do_lead, quantidade_de_quartos, bairro, orcamento, criado_em, atualizado_em
+SELECT	id, nome_do_lead, quantidade_de_quartos, bairro, orcamento, temperatura_do_lead, criado_em, atualizado_em
 FROM lead_info as li
 	WHERE li.id = :p1
 """
 
 
 GET_LEAD_BY_NAME = """-- name: get_lead_by_name \\:one
-SELECT	id, nome_do_lead, quantidade_de_quartos, bairro, orcamento, criado_em, atualizado_em
+SELECT	id, nome_do_lead, quantidade_de_quartos, bairro, orcamento, temperatura_do_lead, criado_em, atualizado_em
 FROM lead_info as li
 	WHERE li.nome_do_lead = :p1
 """
@@ -53,7 +53,14 @@ UPDATE_LEAD_NAME = """-- name: update_lead_name \\:one
 UPDATE	lead_info
 	SET nome_do_lead = :p2
 	WHERE id = :p1
-RETURNING id, nome_do_lead, quantidade_de_quartos, bairro, orcamento, criado_em, atualizado_em
+RETURNING id, nome_do_lead, quantidade_de_quartos, bairro, orcamento, temperatura_do_lead, criado_em, atualizado_em
+"""
+
+
+UPDATE_LEAD_TEMPERATURE = """-- name: update_lead_temperature \\:exec
+UPDATE	lead_info
+	SET temperatura_do_lead = :p2
+	WHERE id = :p1
 """
 
 
@@ -85,8 +92,9 @@ class Querier:
             quantidade_de_quartos=row[2],
             bairro=row[3],
             orcamento=row[4],
-            criado_em=row[5],
-            atualizado_em=row[6],
+            temperatura_do_lead=row[5],
+            criado_em=row[6],
+            atualizado_em=row[7],
         )
 
     def create_lead_with_name(self, *, nome_do_lead: Optional[str]) -> Optional[models.LeadInfo]:
@@ -99,8 +107,9 @@ class Querier:
             quantidade_de_quartos=row[2],
             bairro=row[3],
             orcamento=row[4],
-            criado_em=row[5],
-            atualizado_em=row[6],
+            temperatura_do_lead=row[5],
+            criado_em=row[6],
+            atualizado_em=row[7],
         )
 
     def get_lead_by_id(self, *, id: int) -> Optional[models.LeadInfo]:
@@ -113,8 +122,9 @@ class Querier:
             quantidade_de_quartos=row[2],
             bairro=row[3],
             orcamento=row[4],
-            criado_em=row[5],
-            atualizado_em=row[6],
+            temperatura_do_lead=row[5],
+            criado_em=row[6],
+            atualizado_em=row[7],
         )
 
     def get_lead_by_name(self, *, nome_do_lead: Optional[str]) -> Optional[models.LeadInfo]:
@@ -127,8 +137,9 @@ class Querier:
             quantidade_de_quartos=row[2],
             bairro=row[3],
             orcamento=row[4],
-            criado_em=row[5],
-            atualizado_em=row[6],
+            temperatura_do_lead=row[5],
+            criado_em=row[6],
+            atualizado_em=row[7],
         )
 
     def update_budget(self, *, id: int, orcamento: Optional[int]) -> None:
@@ -144,9 +155,13 @@ class Querier:
             quantidade_de_quartos=row[2],
             bairro=row[3],
             orcamento=row[4],
-            criado_em=row[5],
-            atualizado_em=row[6],
+            temperatura_do_lead=row[5],
+            criado_em=row[6],
+            atualizado_em=row[7],
         )
+
+    def update_lead_temperature(self, *, id: int, temperatura_do_lead: models.Temperaturadolead) -> None:
+        self._conn.execute(sqlalchemy.text(UPDATE_LEAD_TEMPERATURE), {"p1": id, "p2": temperatura_do_lead})
 
     def update_neighbourhood(self, *, id: int, bairro: Optional[str]) -> None:
         self._conn.execute(sqlalchemy.text(UPDATE_NEIGHBOURHOOD), {"p1": id, "p2": bairro})
@@ -169,8 +184,9 @@ class AsyncQuerier:
             quantidade_de_quartos=row[2],
             bairro=row[3],
             orcamento=row[4],
-            criado_em=row[5],
-            atualizado_em=row[6],
+            temperatura_do_lead=row[5],
+            criado_em=row[6],
+            atualizado_em=row[7],
         )
 
     async def create_lead_with_name(self, *, nome_do_lead: Optional[str]) -> Optional[models.LeadInfo]:
@@ -183,8 +199,9 @@ class AsyncQuerier:
             quantidade_de_quartos=row[2],
             bairro=row[3],
             orcamento=row[4],
-            criado_em=row[5],
-            atualizado_em=row[6],
+            temperatura_do_lead=row[5],
+            criado_em=row[6],
+            atualizado_em=row[7],
         )
 
     async def get_lead_by_id(self, *, id: int) -> Optional[models.LeadInfo]:
@@ -197,8 +214,9 @@ class AsyncQuerier:
             quantidade_de_quartos=row[2],
             bairro=row[3],
             orcamento=row[4],
-            criado_em=row[5],
-            atualizado_em=row[6],
+            temperatura_do_lead=row[5],
+            criado_em=row[6],
+            atualizado_em=row[7],
         )
 
     async def get_lead_by_name(self, *, nome_do_lead: Optional[str]) -> Optional[models.LeadInfo]:
@@ -211,8 +229,9 @@ class AsyncQuerier:
             quantidade_de_quartos=row[2],
             bairro=row[3],
             orcamento=row[4],
-            criado_em=row[5],
-            atualizado_em=row[6],
+            temperatura_do_lead=row[5],
+            criado_em=row[6],
+            atualizado_em=row[7],
         )
 
     async def update_budget(self, *, id: int, orcamento: Optional[int]) -> None:
@@ -228,9 +247,13 @@ class AsyncQuerier:
             quantidade_de_quartos=row[2],
             bairro=row[3],
             orcamento=row[4],
-            criado_em=row[5],
-            atualizado_em=row[6],
+            temperatura_do_lead=row[5],
+            criado_em=row[6],
+            atualizado_em=row[7],
         )
+
+    async def update_lead_temperature(self, *, id: int, temperatura_do_lead: models.Temperaturadolead) -> None:
+        await self._conn.execute(sqlalchemy.text(UPDATE_LEAD_TEMPERATURE), {"p1": id, "p2": temperatura_do_lead})
 
     async def update_neighbourhood(self, *, id: int, bairro: Optional[str]) -> None:
         await self._conn.execute(sqlalchemy.text(UPDATE_NEIGHBOURHOOD), {"p1": id, "p2": bairro})
