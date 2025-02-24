@@ -11,10 +11,26 @@ from project_types.database_types import database_layer
 def atualizar_quartos(
     tool_call_id: Annotated[str, InjectedToolCallId],
     config: RunnableConfig,
-    quantidade_de_quartos: int,
+    quantidade_de_quartos: Annotated[
+        int, "O número de quartos que o usuário informou querer em uma casa"
+    ],
 ) -> Command:
-    """Use essa ferramenta para atualizar quantos quartos o usuário vai querer no apto que o usuário está procurando"""
+    """
+    Use essa ferramenta apenas quando o usuário fornecer uma resposta explícita e direta à pergunta sobre quantos quartos ele quer na casa.
+    Não use essa ferramenta se o usuário mencionar quartos de forma casual ou se o usuário perguntar quantos quartos tem as casas que vocês tem.
+    """
 
+    if quantidade_de_quartos == 0 or quantidade_de_quartos < 0:
+        return Command(
+            update={
+                "messages": [
+                    ToolMessage(
+                        "A quantidade de quartos não foi atualizada pois é menor que 0. continue a conversa normalmente.",
+                        tool_call_id=tool_call_id,
+                    )
+                ],
+            }
+        )
     print(f"A quantidade de quartos que o usuário quer é: {quantidade_de_quartos}")
     thread_id = config["configurable"]["thread_id"]
     assert thread_id is not None

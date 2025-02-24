@@ -59,14 +59,13 @@ def main():
     # setup tools (aqui começa a codebase bilingue xD)
     update_state_tools = [
         internal_tools.atualizar_quartos,
-        internal_tools.atualizar_orcamento,
         internal_tools.atualizar_nome_do_lead,
-        internal_tools.atualizar_com_suite,
-        internal_tools.atualizar_meio_de_contato,
+        internal_tools.atualizar_bairro,
+        internal_tools.atualizar_orcamento,
     ]
 
     # Model/Tooling initialization
-    chatbot_model = ChatOllama(model="llama3.2").bind_tools(update_state_tools)
+    chatbot_model = ChatOllama(model="qwen2.5:7b").bind_tools(update_state_tools)
     tool_node = ToolNode(tools=update_state_tools)
 
     # Graph compile
@@ -119,9 +118,8 @@ def main():
                 initial_state: State = {
                     "nome_do_lead": lead_info.nome_do_lead,
                     "quantidade_de_quartos": lead_info.quantidade_de_quartos,
-                    "com_suite": lead_info.com_suite,
+                    "bairro": lead_info.bairro,
                     "orcamento": lead_info.orcamento,
-                    "meio_de_contato": lead_info.meio_de_contato,
                     "messages": [HumanMessage(content=user_input)],
                 }
                 # generate a runnableConfig based on lead's name

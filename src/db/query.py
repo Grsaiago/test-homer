@@ -15,27 +15,27 @@ CREATE_LEAD = """-- name: create_lead \\:one
 
 INSERT INTO lead_info (
 	nome_do_lead
-) VALUES ( NULL ) RETURNING id, nome_do_lead, quantidade_de_quartos, com_suite, meio_de_contato, orcamento, criado_em, atualizado_em
+) VALUES ( NULL ) RETURNING id, nome_do_lead, quantidade_de_quartos, bairro, orcamento, criado_em, atualizado_em
 """
 
 
 CREATE_LEAD_WITH_NAME = """-- name: create_lead_with_name \\:one
 INSERT INTO lead_info (
 	nome_do_lead
-) VALUES ( :p1 ) RETURNING id, nome_do_lead, quantidade_de_quartos, com_suite, meio_de_contato, orcamento, criado_em, atualizado_em
+) VALUES ( :p1 ) RETURNING id, nome_do_lead, quantidade_de_quartos, bairro, orcamento, criado_em, atualizado_em
 """
 
 
 GET_LEAD_BY_ID = """-- name: get_lead_by_id \\:one
 
-SELECT	id, nome_do_lead, quantidade_de_quartos, com_suite, meio_de_contato, orcamento, criado_em, atualizado_em
+SELECT	id, nome_do_lead, quantidade_de_quartos, bairro, orcamento, criado_em, atualizado_em
 FROM lead_info as li
 	WHERE li.id = :p1
 """
 
 
 GET_LEAD_BY_NAME = """-- name: get_lead_by_name \\:one
-SELECT	id, nome_do_lead, quantidade_de_quartos, com_suite, meio_de_contato, orcamento, criado_em, atualizado_em
+SELECT	id, nome_do_lead, quantidade_de_quartos, bairro, orcamento, criado_em, atualizado_em
 FROM lead_info as li
 	WHERE li.nome_do_lead = :p1
 """
@@ -53,13 +53,13 @@ UPDATE_LEAD_NAME = """-- name: update_lead_name \\:one
 UPDATE	lead_info
 	SET nome_do_lead = :p2
 	WHERE id = :p1
-RETURNING id, nome_do_lead, quantidade_de_quartos, com_suite, meio_de_contato, orcamento, criado_em, atualizado_em
+RETURNING id, nome_do_lead, quantidade_de_quartos, bairro, orcamento, criado_em, atualizado_em
 """
 
 
-UPDATE_MEANS_OF_CONTACT = """-- name: update_means_of_contact \\:exec
+UPDATE_NEIGHBOURHOOD = """-- name: update_neighbourhood \\:exec
 UPDATE	lead_info
-	SET meio_de_contato = :p2
+	SET bairro = :p2
 	WHERE id = :p1
 """
 
@@ -67,13 +67,6 @@ UPDATE	lead_info
 UPDATE_ROOM_AMMOUNT = """-- name: update_room_ammount \\:exec
 UPDATE	lead_info
 	SET quantidade_de_quartos = :p2
-	WHERE id = :p1
-"""
-
-
-UPDATE_WITH_SUITE = """-- name: update_with_suite \\:exec
-UPDATE	lead_info
-	SET com_suite = :p2
 	WHERE id = :p1
 """
 
@@ -90,11 +83,10 @@ class Querier:
             id=row[0],
             nome_do_lead=row[1],
             quantidade_de_quartos=row[2],
-            com_suite=row[3],
-            meio_de_contato=row[4],
-            orcamento=row[5],
-            criado_em=row[6],
-            atualizado_em=row[7],
+            bairro=row[3],
+            orcamento=row[4],
+            criado_em=row[5],
+            atualizado_em=row[6],
         )
 
     def create_lead_with_name(self, *, nome_do_lead: Optional[str]) -> Optional[models.LeadInfo]:
@@ -105,11 +97,10 @@ class Querier:
             id=row[0],
             nome_do_lead=row[1],
             quantidade_de_quartos=row[2],
-            com_suite=row[3],
-            meio_de_contato=row[4],
-            orcamento=row[5],
-            criado_em=row[6],
-            atualizado_em=row[7],
+            bairro=row[3],
+            orcamento=row[4],
+            criado_em=row[5],
+            atualizado_em=row[6],
         )
 
     def get_lead_by_id(self, *, id: int) -> Optional[models.LeadInfo]:
@@ -120,11 +111,10 @@ class Querier:
             id=row[0],
             nome_do_lead=row[1],
             quantidade_de_quartos=row[2],
-            com_suite=row[3],
-            meio_de_contato=row[4],
-            orcamento=row[5],
-            criado_em=row[6],
-            atualizado_em=row[7],
+            bairro=row[3],
+            orcamento=row[4],
+            criado_em=row[5],
+            atualizado_em=row[6],
         )
 
     def get_lead_by_name(self, *, nome_do_lead: Optional[str]) -> Optional[models.LeadInfo]:
@@ -135,11 +125,10 @@ class Querier:
             id=row[0],
             nome_do_lead=row[1],
             quantidade_de_quartos=row[2],
-            com_suite=row[3],
-            meio_de_contato=row[4],
-            orcamento=row[5],
-            criado_em=row[6],
-            atualizado_em=row[7],
+            bairro=row[3],
+            orcamento=row[4],
+            criado_em=row[5],
+            atualizado_em=row[6],
         )
 
     def update_budget(self, *, id: int, orcamento: Optional[int]) -> None:
@@ -153,21 +142,17 @@ class Querier:
             id=row[0],
             nome_do_lead=row[1],
             quantidade_de_quartos=row[2],
-            com_suite=row[3],
-            meio_de_contato=row[4],
-            orcamento=row[5],
-            criado_em=row[6],
-            atualizado_em=row[7],
+            bairro=row[3],
+            orcamento=row[4],
+            criado_em=row[5],
+            atualizado_em=row[6],
         )
 
-    def update_means_of_contact(self, *, id: int, meio_de_contato: Optional[str]) -> None:
-        self._conn.execute(sqlalchemy.text(UPDATE_MEANS_OF_CONTACT), {"p1": id, "p2": meio_de_contato})
+    def update_neighbourhood(self, *, id: int, bairro: Optional[str]) -> None:
+        self._conn.execute(sqlalchemy.text(UPDATE_NEIGHBOURHOOD), {"p1": id, "p2": bairro})
 
     def update_room_ammount(self, *, id: int, quantidade_de_quartos: Optional[int]) -> None:
         self._conn.execute(sqlalchemy.text(UPDATE_ROOM_AMMOUNT), {"p1": id, "p2": quantidade_de_quartos})
-
-    def update_with_suite(self, *, id: int, com_suite: Optional[bool]) -> None:
-        self._conn.execute(sqlalchemy.text(UPDATE_WITH_SUITE), {"p1": id, "p2": com_suite})
 
 
 class AsyncQuerier:
@@ -182,11 +167,10 @@ class AsyncQuerier:
             id=row[0],
             nome_do_lead=row[1],
             quantidade_de_quartos=row[2],
-            com_suite=row[3],
-            meio_de_contato=row[4],
-            orcamento=row[5],
-            criado_em=row[6],
-            atualizado_em=row[7],
+            bairro=row[3],
+            orcamento=row[4],
+            criado_em=row[5],
+            atualizado_em=row[6],
         )
 
     async def create_lead_with_name(self, *, nome_do_lead: Optional[str]) -> Optional[models.LeadInfo]:
@@ -197,11 +181,10 @@ class AsyncQuerier:
             id=row[0],
             nome_do_lead=row[1],
             quantidade_de_quartos=row[2],
-            com_suite=row[3],
-            meio_de_contato=row[4],
-            orcamento=row[5],
-            criado_em=row[6],
-            atualizado_em=row[7],
+            bairro=row[3],
+            orcamento=row[4],
+            criado_em=row[5],
+            atualizado_em=row[6],
         )
 
     async def get_lead_by_id(self, *, id: int) -> Optional[models.LeadInfo]:
@@ -212,11 +195,10 @@ class AsyncQuerier:
             id=row[0],
             nome_do_lead=row[1],
             quantidade_de_quartos=row[2],
-            com_suite=row[3],
-            meio_de_contato=row[4],
-            orcamento=row[5],
-            criado_em=row[6],
-            atualizado_em=row[7],
+            bairro=row[3],
+            orcamento=row[4],
+            criado_em=row[5],
+            atualizado_em=row[6],
         )
 
     async def get_lead_by_name(self, *, nome_do_lead: Optional[str]) -> Optional[models.LeadInfo]:
@@ -227,11 +209,10 @@ class AsyncQuerier:
             id=row[0],
             nome_do_lead=row[1],
             quantidade_de_quartos=row[2],
-            com_suite=row[3],
-            meio_de_contato=row[4],
-            orcamento=row[5],
-            criado_em=row[6],
-            atualizado_em=row[7],
+            bairro=row[3],
+            orcamento=row[4],
+            criado_em=row[5],
+            atualizado_em=row[6],
         )
 
     async def update_budget(self, *, id: int, orcamento: Optional[int]) -> None:
@@ -245,18 +226,14 @@ class AsyncQuerier:
             id=row[0],
             nome_do_lead=row[1],
             quantidade_de_quartos=row[2],
-            com_suite=row[3],
-            meio_de_contato=row[4],
-            orcamento=row[5],
-            criado_em=row[6],
-            atualizado_em=row[7],
+            bairro=row[3],
+            orcamento=row[4],
+            criado_em=row[5],
+            atualizado_em=row[6],
         )
 
-    async def update_means_of_contact(self, *, id: int, meio_de_contato: Optional[str]) -> None:
-        await self._conn.execute(sqlalchemy.text(UPDATE_MEANS_OF_CONTACT), {"p1": id, "p2": meio_de_contato})
+    async def update_neighbourhood(self, *, id: int, bairro: Optional[str]) -> None:
+        await self._conn.execute(sqlalchemy.text(UPDATE_NEIGHBOURHOOD), {"p1": id, "p2": bairro})
 
     async def update_room_ammount(self, *, id: int, quantidade_de_quartos: Optional[int]) -> None:
         await self._conn.execute(sqlalchemy.text(UPDATE_ROOM_AMMOUNT), {"p1": id, "p2": quantidade_de_quartos})
-
-    async def update_with_suite(self, *, id: int, com_suite: Optional[bool]) -> None:
-        await self._conn.execute(sqlalchemy.text(UPDATE_WITH_SUITE), {"p1": id, "p2": com_suite})

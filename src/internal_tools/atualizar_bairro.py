@@ -9,40 +9,40 @@ from project_types.database_types import database_layer
 
 
 @tool
-def atualizar_orcamento(
+def atualizar_bairro(
     tool_call_id: Annotated[str, InjectedToolCallId],
     config: RunnableConfig,
-    orcamento: Annotated[
-        int, "O orçamento que a pessoa informou que tem para comprar uma casa"
+    bairro: Annotated[
+        str, "O bairro no qual a pessoa informou que quer comprar uma casa"
     ],
 ) -> Command:
     """
-    Use essa ferramenta apenas quando o usuário fornecer uma resposta explícita e direta à pergunta sobre qual o orçamento dele para comprar uma casa.
-    Não use essa ferramenta se o usuário mencionar um orçamento de forma casual ou em outro contexto."
+    Use essa ferramenta apenas quando o usuário fornecer uma resposta explícita e direta à pergunta sobre em qual o bairro ela quer comprar a casa.
+    Não use essa ferramenta se o usuário mencionar um bairro de forma casual ou em outro contexto."
     """
 
-    if orcamento < 0:
+    if bairro == "None" or "":
         return Command(
             update={
                 "messages": [
                     ToolMessage(
-                        "O orçamento não foi atualizado pois é um número menor que 0. Continue a conversa normalmente.",
+                        "O bairro não foi atualizado pois está vazio. Continue a conversa normalmente.",
                         tool_call_id=tool_call_id,
                     )
                 ],
             }
         )
-    print(f"O orçamento do usuário é: {orcamento}")
+    print(f"O bairro em que o usuário quer uma casa é: {bairro}")
     thread_id = config["configurable"]["thread_id"]
     assert thread_id is not None
     # thread_id is converted to str before graph passing
-    database_layer.update_budget(int(thread_id), orcamento)
+    database_layer.update_neighbourhood(int(thread_id), bairro)
     return Command(
         update={
-            "orcamento": orcamento,
+            "bairro": bairro,
             "messages": [
                 ToolMessage(
-                    f"O orçamento deste usuário foi salvo como {orcamento} com sucesso!",
+                    f"O bairro no qual o usuário quer uma casa salvo como {bairro} com sucesso!",
                     tool_call_id=tool_call_id,
                 )
             ],

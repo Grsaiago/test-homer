@@ -13,11 +13,9 @@ class LeadInfo:
     nome_do_lead: Optional[str]
     # Quantos quartos a pessoa quer na casa.
     quantidade_de_quartos: Optional[int]
-    # Se a pessoa quer suítes ou não.
-    com_suite: Optional[bool]
-    # A forma que a pessoa prefere ser contactada.
-    meio_de_contato: Optional[str]
-    # O valor que a pessoa tem para a compra
+    # O bairro em que a pessoa está procurando uma casa.
+    bairro: Optional[str]
+    # O valor que a pessoa tem para a compra.
     orcamento: Optional[int]
     criado_em: Optional[datetime.datetime]
     atualizado_em: Optional[datetime.datetime]

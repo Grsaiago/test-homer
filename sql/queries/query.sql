@@ -37,14 +37,9 @@ UPDATE	lead_info
 	SET quantidade_de_quartos = $2
 	WHERE id = $1;
 
--- name: UpdateWithSuite :exec
+-- name: UpdateNeighbourhood :exec
 UPDATE	lead_info
-	SET com_suite = $2
-	WHERE id = $1;
-
--- name: UpdateMeansOfContact :exec
-UPDATE	lead_info
-	SET meio_de_contato = $2
+	SET bairro = $2
 	WHERE id = $1;
 
 -- name: UpdateBudget :exec

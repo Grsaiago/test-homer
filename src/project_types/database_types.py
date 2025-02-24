@@ -106,20 +106,11 @@ class DatabaseLayer:
             connection.commit()
         return None
 
-    def update_with_suite(self, id: int, with_suite: bool) -> None:
+    def update_neighbourhood(self, id: int, neighbourhood: str) -> None:
         with self.get_llm_db_engine().connect() as connection:
-            Querier(connection).update_with_suite(
+            Querier(connection).update_neighbourhood(
                 id=id,
-                com_suite=with_suite,
-            )
-            connection.commit()
-        return None
-
-    def update_means_of_contact(self, id: int, means_of_contact: str) -> None:
-        with self.get_llm_db_engine().connect() as connection:
-            Querier(connection).update_means_of_contact(
-                id=id,
-                meio_de_contato=means_of_contact,
+                bairro=neighbourhood,
             )
             connection.commit()
         return None

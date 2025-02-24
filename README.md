@@ -45,8 +45,8 @@ deployed in a HA environment.
   at the end.
 - [ ] Update Table, State, Tools and Prompt to reflect the
 info that I'll get from the user.
-  - [ ] Table.
-  - [ ] State and Tools.
+  - [x] Table.
+  - [x] State and Tools.
   - [ ] Prompt.
 - [ ] Update Tools to be classes instead of functions, so I can give more
 context on the arguments.
