@@ -228,7 +228,7 @@ https://vilacarnauba.com/masterplan/
 
 ### Como Rodar?
 
-1. Garanta que você tem o qwen2.5 instalado
+#### Garanta que você tem o qwen2.5 instalado
 
 ```bash
 ollama ls | grep qwen2.5
@@ -236,7 +236,7 @@ ollama ls | grep qwen2.5
 
 Deve listar no terminal o modelo
 
-2. Configure um arquivo .env tal qual
+#### Configure um arquivo .env tal qual
 
 ```sh
   POSTGRES_DB = homer-db
@@ -246,13 +246,13 @@ Deve listar no terminal o modelo
   DEBUG = 0
 ```
 
-3. Suba os serviços
+#### Suba os serviços
 
 ```bash
 docker compose up -d
 ```
 
-4. Rode o Agente
+#### Rode o Agente
 
 ```bash
 ./src/main.py 
@@ -264,13 +264,14 @@ ou
 python3 ./src/main.py
 ```
 
-5. Informe um Id
+#### Informe um Id
 
 Aqui pode ser qualquer id. A aplicação vai vai checar por uma entrada na tabela
 que tenha o valor desse id como primary key. Caso não exista,
 ele vai criar uma entrada nova e printar o seu novo id de conversa.
 
-6. Prontinho
+#### Prontinho!
+
 Agora é só conversar. Caso queira conectar no banco com um dbeaver
 da vida para ver as variáveis mudando em tempo real, fique à vontade.
 
