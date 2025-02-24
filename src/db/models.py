@@ -26,5 +26,7 @@ class LeadInfo:
     orcamento: Optional[int]
     # O quão "quente" o lead está para uma venda
     temperatura_do_lead: Temperaturadolead
+    # A data e hora que a pessoa marcou para ser atendida
+    data_e_hora_da_chamada: Optional[str]
     criado_em: Optional[datetime.datetime]
     atualizado_em: Optional[datetime.datetime]

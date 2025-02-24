@@ -51,3 +51,8 @@ UPDATE	lead_info
 UPDATE	lead_info
 	SET temperatura_do_lead = $2
 	WHERE id = $1;
+
+-- name: UpdateCallDateTime :exec
+UPDATE	lead_info
+	SET data_e_hora_da_chamada = $2
+	WHERE id = $1;

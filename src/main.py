@@ -62,6 +62,7 @@ def main():
         internal_tools.atualizar_nome_do_lead,
         internal_tools.atualizar_bairro,
         internal_tools.atualizar_orcamento,
+        internal_tools.atualizar_data_e_hora_da_chamada,
     ]
 
     # Model/Tooling initialization
@@ -121,6 +122,8 @@ def main():
                     "bairro": lead_info.bairro,
                     "orcamento": lead_info.orcamento,
                     "messages": [HumanMessage(content=user_input)],
+                    "temperatura_do_lead": lead_info.temperatura_do_lead,
+                    "data_e_hora_da_chamada": lead_info.data_e_hora_da_chamada,
                 }
                 # generate a runnableConfig based on lead's name
                 user_config: RunnableConfig = {

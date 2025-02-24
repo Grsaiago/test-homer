@@ -34,20 +34,23 @@ deployed in a HA environment.
 
 ### TODOS
 
-- [ ] The llm is still halucinating a bit when passing the args for
+- [ ] Update Table, State, Tools and Prompt to reflect the scheduling of a meeting.
+  - [ ] Table.
+  - [ ] State and Tools.
+  - [ ] Prompt.
+- [x] The llm is still halucinating a bit when passing the args for
   the method that gets an enum. I'll look into creating each tool via
   the class Tool instead of using the function decorator. This way I can
   pass more information about each function parameter.
+  Solved: Switched over to qwenw.5 model, it doesn't halucinate tool usage.
 - [x] I'm feeding the user's name on the prompt, as a result, when the
   user wants to change it's name, the llm changes it to the name it had before,
   because of the order and How I'm building the prompt.\
   Solved: I've taken ou the lead_name formatting for the info, moved to a directive
   at the end.
-- [ ] Update Table, State, Tools and Prompt to reflect the
-info that I'll get from the user.
-  - [x] Table.
-  - [x] State and Tools.
-  - [ ] Prompt.
-- [ ] Update Tools to be classes instead of functions, so I can give more
+- [x] Update Tools to be classes instead of functions, so I can give more
+      Solved: Eventually, the tool decorator is better.
+      Just added documentation to the input args with Annotated types.
 context on the arguments.
-- [ ] I have to finish the sentiment analysis tool, specially the quotient.
+- [x] I have to finish the sentiment analysis tool, specially the quotient.
+      Solved: Done!

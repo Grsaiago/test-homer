@@ -135,5 +135,13 @@ class DatabaseLayer:
             connection.commit()
         return None
 
+    def update_call_date_time(self, id: int, new_date_time: str) -> None:
+        with self.get_llm_db_engine().connect() as connection:
+            Querier(connection).update_call_date_time(
+                id=id, data_e_hora_da_chamada=new_date_time
+            )
+            connection.commit()
+        return None
+
 
 database_layer = DatabaseLayer(envs.db_user, envs.db_passwd, envs.db_host, envs.db_name)
