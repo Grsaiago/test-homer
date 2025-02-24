@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS lead_info (
     quantidade_de_quartos   	INTEGER NULL DEFAULT NULL,  -- número de quartos que a pessoa quer
     bairro			VARCHAR NULL DEFAULT NULL,
     orcamento			INTEGER NULL DEFAULT NULL,
-    temperatura_do_lead		TemPeraturaDoLead NOT NULL DEFAULT TemperaturaDoLead.Quente,
+    temperatura_do_lead		TemPeraturaDoLead NOT NULL DEFAULT 'Frio',
     data_e_hora_da_chamada	VARCHAR NULL DEFAULT NULL,
     criado_em			TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     atualizado_em		TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP

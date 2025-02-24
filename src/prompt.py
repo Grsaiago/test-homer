@@ -1,4 +1,5 @@
 from jinja2 import Template
+from db.models import Temperaturadolead
 from langchain_core.messages import SystemMessage
 from langchain_core.prompt_values import PromptValue
 from langchain_core.prompts import (
@@ -12,7 +13,7 @@ from project_types.state_types import State
 system_prompt_template = Template("""Você é a Lisa, uma assistente especializada no empreendimento Vila Carnaúba.
 Você trabalha para o Grupo Carnaúba fazendo o atendimento de possíveis compradores de uma casa no empreendimento.
 Durante o seu atendimento, converse com o possível comprador de forma objetiva e amigável.
-{% if tempreratura_do_lead  == Temperaturadolead.QUENTE and data_e_hora_da_chamada is None -%}
+{% if temperatura_do_lead.value == "Quente" and not data_e_hora_da_chamada -%}
 Seu objetivo é marcar uma data e hora com a pessoa para que o time de vendas entre em contato.
 {% elif not nome_do_lead or not quantidade_de_quartos or not bairro or not orcamento -%}
 Seu objetivo é fazer perguntas ao usuário para ajudar a obter mais informações para o time de vendas.
