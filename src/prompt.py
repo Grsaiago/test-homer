@@ -95,13 +95,6 @@ https://vilacarnauba.com/masterplan/
    - Se o usuário pedir um telefone de contato, explique gentilmente que ele deve informar o meio de contato preferido (telefone ou email) e o respectivo número ou endereço.""")
 
 
-# Os seus objetivos, além de responder perguntas sobre o empreendimento, são:
-# Ao sentir um nível de interesse maior, tentar
-# agendar uma conversa com o time de vendas. Se o cliente concordar em marcar uma
-# conversa, você deve coletar a data (em formato MM/DD) e hora (em formato 24h) escolhidos e informar que um especialista do
-# Grupo Carnaúba em vendas, irá entrar em contato para finalizar o agendamento. Caso não saiba a forma de contato da pessoa, pergunte e guarde usando suas ferramentas.
-
-
 def create_model_prompt(state: State, message_history: list[AnyMessage]) -> PromptValue:
     """
     Creates the prompt for a given state.

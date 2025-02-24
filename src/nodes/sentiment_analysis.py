@@ -53,13 +53,10 @@ def sentiment_analysis(
     final_temperature: Temperaturadolead
     if final_score >= 0.7:
         final_temperature = Temperaturadolead.QUENTE
-        print("O lead está Quente")
     elif 0.4 <= final_score < 0.6:
         final_temperature = Temperaturadolead.MORNO
-        print("O lead está Morno")
     else:
         final_temperature = Temperaturadolead.FRIO
-        print("O lead está Frio")
 
     # conditional update on state and db
     # We can insert an api call here to behave like a webhook

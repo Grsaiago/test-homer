@@ -243,8 +243,33 @@ Deve listar no terminal o modelo
   POSTGRES_USER = liza
   POSTGRES_PASSWORD = senhasupersegura123
   DB_HOST = localhost
-  DEBUG = 0
+  # Debug cofigura se o langGraph vai emitir logs de debug ou não.
+  DEBUG = 0 # pode ser qualquer valor 'truthy' ou [0, 'f', 'false', 'False']. 
 ```
+
+#### Configure venv
+
+**Configurações de primeira vez rodando:**
+
+- Para criar uma venv:
+
+```bash
+uv venv
+```
+
+- Para baixar os pacotes na venv:
+
+```bash
+uv sync
+```
+
+**Já rodei as configurações de primeira vez:**
+
+Para entrar na venv:
+```bash
+source .venv/bin/activate
+```
+*para sair da venv é só digitar `deactivate` no terminal e dar enter.
 
 #### Suba os serviços
 
@@ -268,7 +293,8 @@ python3 ./src/main.py
 
 Aqui pode ser qualquer id. A aplicação vai vai checar por uma entrada na tabela
 que tenha o valor desse id como primary key. Caso não exista,
-ele vai criar uma entrada nova e printar o seu novo id de conversa.
+ele vai criar uma entrada nova e printar o seu novo id de conversa.\
+Caso queira informar um novo Id, é só digitar `nova_conversa`
 
 #### Prontinho!
 

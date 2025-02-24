@@ -32,7 +32,6 @@ def atualizar_bairro(
                 ],
             }
         )
-    print(f"O bairro em que o usuário quer uma casa é: {bairro}")
     thread_id = config["configurable"]["thread_id"]
     assert thread_id is not None
     # thread_id is converted to str before graph passing

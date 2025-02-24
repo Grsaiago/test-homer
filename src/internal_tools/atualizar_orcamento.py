@@ -32,7 +32,6 @@ def atualizar_orcamento(
                 ],
             }
         )
-    print(f"O orçamento do usuário é: {orcamento}")
     thread_id = config["configurable"]["thread_id"]
     assert thread_id is not None
     # thread_id is converted to str before graph passing

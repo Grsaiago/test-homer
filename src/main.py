@@ -50,7 +50,6 @@ def stream_graph_updates(
 def main():
     # set debugging for langGraph (or not)
     set_debug(envs.debug)
-    print(f"O valor de debug é : {envs.debug}")
 
     # memory setup
     memory = PostgresSaver(database_layer.get_lang_graph_pool())
@@ -111,7 +110,7 @@ def main():
                 assert lead_info is not None
                 lead_id = lead_info.id  # atualizar o lead_id para o que exista
                 if is_new_lead:
-                    print("Opa! Um novo lead xD")
+                    print(f"O seu id é: {lead_id}\nGuarde ele com carinho!")
                 # We initialize the state with what's in the lead_info table because we want
                 # that any changes made to the db by third party (e.g: real estate agents)
                 # to be reflected as soon as possible to the llm.

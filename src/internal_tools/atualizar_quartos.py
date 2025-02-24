@@ -31,7 +31,6 @@ def atualizar_quartos(
                 ],
             }
         )
-    print(f"A quantidade de quartos que o usuário quer é: {quantidade_de_quartos}")
     thread_id = config["configurable"]["thread_id"]
     assert thread_id is not None
     database_layer.update_room_ammount(int(thread_id), quantidade_de_quartos)

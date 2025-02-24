@@ -30,7 +30,6 @@ def atualizar_nome_do_lead(
                 ],
             }
         )
-    print(f"O nome do usuário é: {novo_nome}")
     thread_id = config["configurable"]["thread_id"]
     assert thread_id is not None
     # thread_id is converted to str before graph passing

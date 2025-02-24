@@ -33,7 +33,6 @@ def atualizar_data_e_hora_da_chamada(
                 ],
             }
         )
-    print(f"A datahora que o usuário quer receber uma chamada é: {data_e_hora}")
     thread_id = config["configurable"]["thread_id"]
     assert thread_id is not None
     # thread_id is converted to str before graph passing
