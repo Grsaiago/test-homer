@@ -150,7 +150,7 @@ o requisito tem que ser cumprido.
         e colocá-la como um consumer de uma fila. (Não gosto dessa)\
   2.2:  Podemos colocar o Agente como um serviço e fazer ele comunicar com os outros
         serviços por grpc, o que já bate na imposição de banda
-        - que é outra imposição principal. (Essa é hype :D).\
+        - que é outra imposição principal. (Essa é hype :D).
 
 3. **A implementação de cada elemento:** Aqui tem uma opção legal,
 investigar se cabe usar o [py03](https://pyo3.rs/main/getting-started.html?) para
