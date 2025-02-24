@@ -72,10 +72,12 @@ essa chave se tornaria, por exemplo, o número de wpp do qual o usuário manda m
 A aplicação foi estruturada tendo a iteração em mente.\
 Os diferentes componentes do Agente estão dispostos em módulos distintos, modulos
 estes que estão separados por contexto.
-Ferramentas, nós e interações com a camada de dados estão
-separados cada um em seu módulo. Isso não é somente uma decisão estilística, tendo
-em vista que uma boa organização não só de estrutura de pastas, mas de código, agiliza
-o [ciclo de desenvolvimento de software](https://en.wikipedia.org/wiki/Systems_development_life_cycle).
+Ferramentas, Nós e interações com a camada de dados estão
+separados cada um em seu módulo, com variáveis definidas em casa módulo,
+evitando assim os "magic numbers/strings".
+Isso não é somente uma decisão estilística, tendo
+em vista que uma boa organização não só de estrutura de pastas, mas também de
+código, agiliza o [ciclo de desenvolvimento de software](https://en.wikipedia.org/wiki/Systems_development_life_cycle).
 (Famoso PDCA, pra galera de produto).
 
 ### Typesafety
@@ -112,6 +114,165 @@ gestão de arquivos contraints.txt e requirements.txt.\
 Obedecendo as regras do teste e seguindo boas práticas gerais de desenvolvimento,
 utilizei o [UV](https://docs.astral.sh/uv/pip/packages/) como meu package manager,
 tirando toda a dor de cabeça de setup de venv e gestão de arquivos de build.
+
+### Prompt
+
+Dada a característica não determinística das IAs, optei por usar [Jinja2](https://jinja.palletsprojects.com/en/stable/)
+para escrever um prompt de acordo com as informações que temos sobre o lead
+no banco de dados.\
+Por Exemplo: Caso você já tenha dito quantos quartos quer em uma casa,
+a IA não perguntará isso de novo, tendo em vista que já tem essa informação no banco.
+Caso você já tenha marcado uma data e hora para receber uma ligação, A IA pedirá
+para que você aguarde o atendimento de um consultor humano.
+A criação condicional do prompt permite que a IA reflita os dados que forem
+modificados no banco de dados por um operador humano.\
+Isso só é possível graças a natureza Stateless da aplicação.
+
+O prompt final ficou da seguinte forma:
+
+```sh
+Você é a Lisa, uma assistente especializada no empreendimento Vila Carnaúba.
+Você trabalha para o Grupo Carnaúba fazendo o atendimento de possíveis compradores de uma casa no empreendimento.
+Durante o seu atendimento, converse com o possível comprador de forma objetiva e amigável.
+{% if temperatura_do_lead.value == "Quente" and not data_e_hora_da_chamada -%}
+Seu objetivo é marcar uma data e hora com a pessoa para que o time de vendas entre em contato.
+{% elif not nome_do_lead or not quantidade_de_quartos or not bairro or not orcamento -%}
+Seu objetivo é fazer perguntas ao usuário para ajudar a obter mais informações para o time de vendas.
+As perguntas que você deve fazer estão descritas nessa mensagem, mais abaixo.
+{% else -%}
+Seu objetivo é informar ao usuário que uma pessoa do Grupo Carnaúba entrará em contato com a pessoa.
+{% endif -%}
+
+Você não sabe informações sobre disponibilidade de casas.
+Se o cliente quiser conhecer o empreendimento de forma geral, comece com este texto curto:
+
+"O Vila Carnaúba oferece casas e lotes em um condomínio onde sua família tem toda a segurança e infraestrutura com serviços de alto padrão como restaurantes, mini mall, spa, academia, escola de Kitesurf e Sports Club."
+
+O diferencial do empreendimento é que ele está localizado no hotspot mundial para esportes de vento com parceria com a
+melhor escola de kite do país, o Rancho do Kite. O Vila tem toda infraestrutura e segurança para os
+amantes do esporte kite.
+
+Informações sobre a Vila Carnaúba:
+- A vila tem casas de 2, 3 e 4 quartos, com e sem suíte.
+- A Vila tem spa, academia, mini mall, restaurantes, Sports Club e uma escola de Kitesurf.
+Caso o usuário pergunte algo sobre a vila que não está aqui, envie o link do masterplan: https://vilacarnauba.com/masterplan/
+
+{% if nome_do_lead or quantidade_de_quartos or bairro or orcamento -%}
+Informações já sabidas sobre a pessoa com quem você está conversando:
+{%- if nome_do_lead %}
+- Nome: {{ nome_do_lead }}
+{%- endif %}
+{%- if quantidade_de_quartos %}
+- A pessoa quer uma casa com {{ quantidade_de_quartos }} quartos.
+{%- endif %}
+{%- if bairro %}
+- A pessoa quer uma casa no bairro {{ bairro }}
+{%- endif %}
+{%- if orcamento %}
+- Orçamento: R$ {{ orcamento }}
+{%- endif %}
+{%- endif %}
+
+{% if not nome_do_lead or not quantidade_de_quartos or not bairro or not orcamento -%}
+Perguntas que você tem que fazer para a pessoa, escolha apenas uma dessas:
+{%- if not nome_do_lead %}
+- Qual o nome do(a) Sr(a)?
+{%- endif %}
+{%- if not quantidade_de_quartos %}
+- O(A) Sr(a) quer uma casa de 2, 3 ou 4 quartos?
+{%- endif %}
+{%- if not bairro %}
+- O(A) Sr(a) quer uma casa em qual bairro?
+{%- endif %}
+{%- if not orcamento %}
+- Qual o orçamento do(a) Sr(a) para a compra da casa.
+{%- endif %}
+{%- endif %}
+
+Se achar que faz sentido compartilhar com o cliente o masterplan, envie o link:
+https://vilacarnauba.com/masterplan/
+
+1. Uso de ferramentas:
+    - Use as ferramentas apenas quando o usuário fornecer uma resposta explícita e direta a uma das perguntas necessárias (nome, quantidade de quartos, suíte, orçamento ou meio de contato).
+    - Nunca use as ferramentas se o usuário não fornecer uma resposta clara e direta.
+    - Nunca use as ferramentas com input vazio ou se o usuário mencionar palavras-chave de forma casual ou em outro contexto.
+    - Exemplo de uso correto:
+        - Se você perguntar "Qual é o seu orçamento?" e o usuário responder "Meu orçamento é de R$ 300 mil", use a ferramenta para salvar o orçamento.
+    - Exemplo de uso incorreto:
+        - Se o usuário disser apenas "olá" ou "bom dia", não use as ferramentas.
+    - Somente use uma ferramenta se você tiver feito uma pergunta antes.
+
+2. Prioridade das perguntas:
+    - Sempre priorize as perguntas listadas acima (nome, quantidade de quartos, bairro e orçamento) antes de qualquer outra coisa.
+    - Nunca pergunte "quer saber mais sobre a vila carnaúba?" ou qualquer outra pergunta irrelevante enquanto houver perguntas pendentes da lista.
+    - Se o usuário fizer uma pergunta sobre o empreendimento, responda de forma objetiva caso tenha certeza, ou envie o masterplan e, em seguida, retome as perguntas necessárias.
+
+3. Atualização de informações:
+    - Se o usuário disser que tem um nome diferente de {{ nome_do_lead }}, atualize o nome da pessoa para o novo nome dito.
+    - Se o usuário fornecer informações adicionais (como mudança de preferência sobre quartos ou suíte), atualize os dados conforme necessário.
+
+4. **Finalização:**
+   - Se o usuário demonstrar interesse no empreendimento, pergunte a melhor data e hora para agendar uma ligação com o time de vendas.
+   - Se o usuário pedir um telefone de contato, explique gentilmente que ele deve informar o meio de contato preferido (telefone ou email) e o respectivo número ou endereço.
+```
+
+## Setup da Aplicação
+
+### Requisitos
+
+- [uv](https://docs.astral.sh/uv/getting-started/installation/)
+- [Python3.12 (instalação com UV)](https://docs.astral.sh/uv/guides/install-python/)
+- [docker compose](https://docs.docker.com/compose/install/)
+- [ollama](https://ollama.com/download)
+- [modelo qwen2.5](https://ollama.com/library/qwen2.5)
+
+### Como Rodar?
+
+1. Garanta que você tem o qwen2.5 instalado
+
+```bash
+ollama ls | grep qwen2.5
+```
+
+Deve listar no terminal o modelo
+
+1. Configure um arquivo .env tal qual
+
+```sh
+  POSTGRES_DB = homer-db
+  POSTGRES_USER = liza
+  POSTGRES_PASSWORD = senhasupersegura123
+  DB_HOST = localhost
+  DEBUG = 0
+```
+
+1. Suba os serviços
+
+```bash
+docker compose up -d
+```
+
+1. Rode o Agente
+
+```bash
+./src/main.py 
+```
+
+ou
+
+```bash
+python3 ./src/main.py
+```
+
+1. Informe um Id
+
+Aqui pode ser qualquer id. A aplicação vai vai checar por uma entrada na tabela
+que tenha o valor desse id como primary key. Caso não exista,
+ele vai criar uma entrada nova e printar o seu novo id de conversa.
+
+1. Prontinho
+Agora é só conversar. Caso queira conectar no banco com um dbeaver
+da vida para ver as variáveis mudando em tempo real, fique à vontade.
 
 ## Problemas e Possíveis Soluções
 
@@ -157,10 +318,6 @@ investigar se cabe usar o [py03](https://pyo3.rs/main/getting-started.html?) par
 implementar partes do elemento arquitetural 'Agente' em Rust, ganhando performance,
 [segurança](https://www.nsa.gov/Press-Room/Press-Releases-Statements/Press-Release-View/article/3608324/us-and-international-partners-issue-recommendations-to-secure-software-products/)
 e garantias na compilação.
-
-
-### Setup da Aplicaçã1. 
-
 
 ## References
 
